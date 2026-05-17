@@ -1,3 +1,7 @@
+export const config = {
+  maxDuration: 60
+};
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -143,7 +147,7 @@ export default async function handler(req, res) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { maxOutputTokens: 3000, temperature: 0.6 }
+          generationConfig: { maxOutputTokens: 8192, temperature: 0.6 }
         })
       }
     );
