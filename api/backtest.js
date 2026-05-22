@@ -64,6 +64,7 @@ export default async function handler(req, res) {
     });
   }
 
+  const ma5  = sma(priceArr, 5);
   const ma20 = sma(priceArr, 20);
   const ma60 = sma(priceArr, 60);
   const rsiArr = calcRsi(priceArr);
@@ -73,10 +74,15 @@ export default async function handler(req, res) {
   // 1 = buy, -1 = sell, 0 = hold
   const signals = candles.map((_, i) => {
     if (i === 0) return 0;
+    if (strategy === 'ma_cross_5_20') {
+      if (!ma5[i] || !ma20[i] || !ma5[i - 1] || !ma20[i - 1]) return 0;
+      if (ma5[i - 1] < ma20[i - 1] && ma5[i] >= ma20[i]) return 1;   // golden cross MA5/20
+      if (ma5[i - 1] > ma20[i - 1] && ma5[i] <= ma20[i]) return -1;  // death cross MA5/20
+    }
     if (strategy === 'ma_cross') {
       if (!ma20[i] || !ma60[i] || !ma20[i - 1] || !ma60[i - 1]) return 0;
-      if (ma20[i - 1] < ma60[i - 1] && ma20[i] >= ma60[i]) return 1;  // golden cross
-      if (ma20[i - 1] > ma60[i - 1] && ma20[i] <= ma60[i]) return -1; // death cross
+      if (ma20[i - 1] < ma60[i - 1] && ma20[i] >= ma60[i]) return 1;  // golden cross MA20/60
+      if (ma20[i - 1] > ma60[i - 1] && ma20[i] <= ma60[i]) return -1; // death cross MA20/60
     }
     if (strategy === 'rsi_range') {
       if (!rsiArr[i] || !rsiArr[i - 1]) return 0;

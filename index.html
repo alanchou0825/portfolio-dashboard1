@@ -734,18 +734,18 @@ body::after {
       </div>
       <div class="nav-right">
         <span class="update-time" id="updateTime">--:--</span>
-        <button class="refresh-btn" id="refreshBtn" onclick="fetchAllPrices()">SYNC</button>
+        <button class="refresh-btn" id="refreshBtn" onclick="fetchAllPrices()">同步</button>
       </div>
     </div>
   </nav>
 
   <!-- Tab Bar -->
   <div class="tab-bar">
-    <div class="tab-item active" onclick="switchTab('dashboard',this)">OVERVIEW</div>
-    <div class="tab-item" onclick="switchTab('holdings',this)">ASSETS</div>
-    <div class="tab-item" onclick="switchTab('manage',this)">CONFIG</div>
-    <div class="tab-item" onclick="switchTab('analysis',this)">ANALYSIS</div>
-    <div class="tab-item" onclick="switchTab('backtest',this)">BACKTEST</div>
+    <div class="tab-item active" onclick="switchTab('dashboard',this)">總覽</div>
+    <div class="tab-item" onclick="switchTab('holdings',this)">持股</div>
+    <div class="tab-item" onclick="switchTab('manage',this)">管理</div>
+    <div class="tab-item" onclick="switchTab('analysis',this)">分析</div>
+    <div class="tab-item" onclick="switchTab('backtest',this)">回測</div>
   </div>
 
   <!-- ── DASHBOARD ── -->
@@ -756,18 +756,18 @@ body::after {
         <div class="circuit-lines">&#x2518;&#x250C;&#x2514;&#x2510;</div>
         <div class="hero-eyebrow" id="heroDate">SYS.CLOCK // LOADING...</div>
         <div class="hero-value" id="heroValue">NT$ ——</div>
-        <div class="hero-subtitle">TOTAL PORTFOLIO VALUE</div>
+        <div class="hero-subtitle">投組總市值</div>
         <div class="hero-meta">
           <div class="hero-meta-item">
-            <div class="hero-meta-label">COST BASIS</div>
+            <div class="hero-meta-label">成本基礎</div>
             <div class="hero-meta-val" id="heroCost">——</div>
           </div>
           <div class="hero-meta-item">
-            <div class="hero-meta-label">UNREALIZED P&amp;L</div>
+            <div class="hero-meta-label">未實現損益</div>
             <div class="hero-meta-val" id="heroProfit">——</div>
           </div>
           <div class="hero-meta-item">
-            <div class="hero-meta-label">RETURN</div>
+            <div class="hero-meta-label">報酬率</div>
             <div class="hero-meta-val" id="heroPct">——</div>
           </div>
         </div>
@@ -790,9 +790,9 @@ body::after {
             clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
           " onmouseover="this.style.background='rgba(0,212,255,0.1)';this.style.boxShadow='0 0 16px rgba(0,212,255,0.3)'"
              onmouseout="this.style.background='transparent';this.style.boxShadow='none'">
-            AI DEEP ANALYSIS
+            AI 深度分析
           </button>
-          <span style="font-family:var(--mono);font-size:10px;color:var(--text3)">// GEMINI POWERED</span>
+          <span style="font-family:var(--mono);font-size:10px;color:var(--text3)">// 由 Gemini 驅動</span>
         </div>
       </div>
     </div>
@@ -800,14 +800,14 @@ body::after {
     <div class="section">
       <div class="mini-grid">
         <div class="card mini-card">
-          <div class="mini-label">PROFITABLE</div>
+          <div class="mini-label">獲利持倉</div>
           <div class="mini-value" id="profitCount" style="color:var(--green);text-shadow:0 0 20px rgba(0,255,136,0.5)">—</div>
-          <div class="mini-sub" id="profitSub">POSITIONS</div>
+          <div class="mini-sub" id="profitSub">持倉</div>
         </div>
         <div class="card mini-card">
-          <div class="mini-label">IN LOSS</div>
+          <div class="mini-label">虧損持倉</div>
           <div class="mini-value" id="lossCount" style="color:var(--red);text-shadow:0 0 20px rgba(255,45,85,0.5)">—</div>
-          <div class="mini-sub" id="lossSub">POSITIONS</div>
+          <div class="mini-sub" id="lossSub">持倉</div>
         </div>
       </div>
     </div>
@@ -815,7 +815,7 @@ body::after {
     <div class="section">
       <div class="card chart-card">
         <div class="chart-header">
-          <div class="chart-title">ALLOCATION MATRIX</div>
+          <div class="chart-title">資產配置</div>
         </div>
         <div class="pie-section">
           <div class="pie-wrap"><canvas id="pieChart"></canvas></div>
@@ -826,7 +826,7 @@ body::after {
 
     <div class="section">
       <div class="card rate-bar">
-        <div class="rate-label">USD/TWD RATE</div>
+        <div class="rate-label">美元兌台幣匯率</div>
         <input class="rate-input" type="number" id="usdRate" value="32" onchange="onRateChange()" />
       </div>
     </div>
@@ -849,41 +849,98 @@ body::after {
   <div class="panel" id="panel-manage">
     <div class="section">
       <div class="card form-card">
-        <div class="form-section-label">ADD POSITION</div>
+        <div class="form-section-label">新增持倉</div>
         <div class="form-grid">
           <div class="form-group full">
-            <div class="form-label">MARKET</div>
+            <div class="form-label">市場類型</div>
             <select class="sf-select" id="fMarket" onchange="updateFormHint()">
-              <option value="台股">TW STOCK</option>
-              <option value="美股">US STOCK</option>
+              <option value="台股">台股</option>
+              <option value="美股">美股</option>
               <option value="ETF">ETF</option>
             </select>
           </div>
           <div class="form-group">
-            <div class="form-label">NAME</div>
+            <div class="form-label">名稱</div>
             <input class="sf-input" id="fName" placeholder="台積電" />
           </div>
           <div class="form-group">
-            <div class="form-label">TICKER</div>
+            <div class="form-label">代號</div>
             <input class="sf-input" id="fCode" placeholder="2330" />
           </div>
           <div class="form-group">
-            <div class="form-label">SHARES</div>
+            <div class="form-label">股數</div>
             <input class="sf-input" type="number" id="fShares" placeholder="500" />
           </div>
           <div class="form-group">
-            <div class="form-label" id="fCostLabel">COST (TWD)</div>
+            <div class="form-label" id="fCostLabel">成本（台幣）</div>
             <input class="sf-input" type="number" id="fCost" placeholder="850" />
           </div>
         </div>
-        <button class="btn-add" onclick="addStock()">// EXECUTE ADD</button>
+        <button class="btn-add" onclick="addStock()">// 新增持倉</button>
       </div>
     </div>
 
     <div class="section">
       <div class="card">
-        <div class="manage-list-header">POSITION REGISTRY</div>
+        <div class="manage-list-header">持倉清單</div>
         <div id="manageList"></div>
+      </div>
+    </div>
+
+    <!-- ── 自動下單面板（Phase 3）── -->
+    <div class="section" style="padding-bottom:24px">
+      <div class="card form-card">
+        <div class="form-section-label">自動下單（永豐金 API）</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:12px;letter-spacing:0.05em">
+          // 需部署 Python 後端至 Railway，並在永豐金開通 API 權限
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group full">
+            <div class="form-label">後端服務網址</div>
+            <input class="sf-input" id="atUrl" placeholder="https://xxx.railway.app" style="width:100%" />
+          </div>
+          <div class="form-group full">
+            <div class="form-label">API Token</div>
+            <input class="sf-input" id="atToken" type="password" placeholder="你設定的 API_TOKEN" style="width:100%" />
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin:12px 0">
+          <button class="btn-add" style="flex:1;padding:10px" onclick="fetchAtPositions()">查詢持倉</button>
+          <button class="btn-add" style="flex:1;padding:10px" onclick="fetchAtBalance()">帳戶餘額</button>
+        </div>
+        <div id="atAccountInfo" style="font-family:var(--mono);font-size:11px;color:var(--text2);background:rgba(0,180,255,0.04);border:1px solid var(--border);padding:10px;min-height:40px;white-space:pre-wrap;display:none"></div>
+
+        <div style="border-top:1px solid var(--border);margin:16px 0"></div>
+
+        <div class="form-section-label" style="font-size:10px">送出委託</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <div class="form-label">代號</div>
+            <input class="sf-input" id="atCode" placeholder="0050" style="text-transform:uppercase" />
+          </div>
+          <div class="form-group">
+            <div class="form-label">操作</div>
+            <select class="sf-select" id="atAction">
+              <option value="Buy">▲ 買入</option>
+              <option value="Sell">▼ 賣出</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <div class="form-label">股數</div>
+            <input class="sf-input" type="number" id="atQty" placeholder="1000" />
+          </div>
+          <div class="form-group">
+            <div class="form-label">價格（空白＝市價）</div>
+            <input class="sf-input" type="number" id="atPrice" placeholder="選填" step="0.01" />
+          </div>
+        </div>
+        <button class="btn-add" id="atOrderBtn" onclick="confirmOrder()"
+          style="background:rgba(255,45,85,0.15);border-color:var(--red);color:var(--red);width:100%;margin-top:4px">
+          ⚡ 確認送出委託
+        </button>
+        <div id="atOrderResult" style="font-family:var(--mono);font-size:11px;margin-top:8px;min-height:20px"></div>
       </div>
     </div>
   </div>
@@ -893,8 +950,8 @@ body::after {
     <div class="section">
       <div class="card chart-card">
         <div class="chart-header">
-          <div class="chart-title">MARKET ALLOCATION</div>
-          <div class="chart-sub" style="font-family:var(--mono);font-size:10px;color:var(--text3)">// BY MARKET TYPE · TWD VALUE</div>
+          <div class="chart-title">市場配置</div>
+          <div class="chart-sub" style="font-family:var(--mono);font-size:10px;color:var(--text3)">// 依市場類型 · 台幣市值</div>
         </div>
         <div class="pie-section">
           <div class="pie-wrap"><canvas id="analysisAllocChart"></canvas></div>
@@ -906,10 +963,10 @@ body::after {
     <div class="section">
       <div class="card chart-card">
         <div class="chart-header">
-          <div class="chart-title">PORTFOLIO PERFORMANCE</div>
-          <div class="chart-sub" style="font-family:var(--mono);font-size:10px;color:var(--text3)">// 6-MONTH EQUITY CURVE VS COST BASIS</div>
+          <div class="chart-title">投組績效曲線</div>
+          <div class="chart-sub" style="font-family:var(--mono);font-size:10px;color:var(--text3)">// 6 個月淨值曲線 vs 成本基線</div>
         </div>
-        <div id="analysisPerfStatus" style="font-family:var(--mono);font-size:11px;color:var(--text3);padding:8px 0;display:none">LOADING HISTORICAL DATA...</div>
+        <div id="analysisPerfStatus" style="font-family:var(--mono);font-size:11px;color:var(--text3);padding:8px 0;display:none">載入歷史資料中...</div>
         <canvas id="analysisPerfChart" style="width:100%;height:260px"></canvas>
       </div>
     </div>
@@ -919,42 +976,43 @@ body::after {
   <div class="panel" id="panel-backtest">
     <div class="section">
       <div class="card form-card">
-        <div class="form-section-label">STRATEGY CONFIG</div>
+        <div class="form-section-label">策略設定</div>
         <div class="form-grid">
           <div class="form-group">
-            <div class="form-label">TICKER</div>
+            <div class="form-label">代號</div>
             <input class="sf-input" id="btCode" placeholder="0050" style="text-transform:uppercase" />
           </div>
           <div class="form-group">
-            <div class="form-label">MARKET</div>
+            <div class="form-label">市場類型</div>
             <select class="sf-select" id="btMarket">
               <option value="ETF">ETF</option>
-              <option value="台股">TW STOCK</option>
-              <option value="美股">US STOCK</option>
+              <option value="台股">台股</option>
+              <option value="美股">美股</option>
             </select>
           </div>
           <div class="form-group">
-            <div class="form-label">STRATEGY</div>
+            <div class="form-label">策略</div>
             <select class="sf-select" id="btStrategy">
-              <option value="ma_cross">MA CROSS (20/60)</option>
-              <option value="rsi_range">RSI RANGE (30/70)</option>
-              <option value="bollinger">BOLLINGER BREAKOUT</option>
+              <option value="ma_cross_5_20">黃金／死亡交叉（MA5/20）</option>
+              <option value="ma_cross">黃金／死亡交叉（MA20/60）</option>
+              <option value="rsi_range">RSI 區間（30/70）</option>
+              <option value="bollinger">布林通道突破</option>
             </select>
           </div>
           <div class="form-group">
-            <div class="form-label">PERIOD</div>
+            <div class="form-label">回測期間</div>
             <select class="sf-select" id="btRange">
-              <option value="1y">1 YEAR</option>
-              <option value="2y">2 YEARS</option>
-              <option value="5y">5 YEARS</option>
+              <option value="1y">1 年</option>
+              <option value="2y">2 年</option>
+              <option value="5y">5 年</option>
             </select>
           </div>
           <div class="form-group full">
-            <div class="form-label">INITIAL CAPITAL (TWD)</div>
+            <div class="form-label">初始資金（台幣）</div>
             <input class="sf-input" type="number" id="btCapital" value="100000" />
           </div>
         </div>
-        <button class="btn-add" id="btRunBtn" onclick="runBacktest()">// RUN BACKTEST</button>
+        <button class="btn-add" id="btRunBtn" onclick="runBacktest()">// 執行回測</button>
       </div>
     </div>
 
@@ -965,14 +1023,14 @@ body::after {
       <div class="section">
         <div class="card chart-card">
           <div class="chart-header">
-            <div class="chart-title">EQUITY CURVE</div>
+            <div class="chart-title">淨值曲線</div>
           </div>
           <canvas id="btEquityChart" style="width:100%;height:260px"></canvas>
         </div>
       </div>
       <div class="section" style="padding-bottom:24px">
         <div class="card">
-          <div class="manage-list-header">TRADE LOG (LAST 20)</div>
+          <div class="manage-list-header">交易記錄（最近 20 筆）</div>
           <div id="btTradeLog"></div>
         </div>
       </div>
@@ -985,20 +1043,20 @@ body::after {
 <div class="modal-overlay" id="aiModal">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title">// TECHNICAL ANALYSIS + AI</div>
-      <button class="modal-close" onclick="closeAiModal()">[ CLOSE ]</button>
+      <div class="modal-title">// 技術分析 + AI</div>
+      <button class="modal-close" onclick="closeAiModal()">[ 關閉 ]</button>
     </div>
     <div class="modal-body">
-      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:8px;text-transform:uppercase">Gemini API Key</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:8px;text-transform:uppercase">Gemini API 金鑰</div>
       <div class="api-key-row">
         <input class="api-key-input" id="geminiKey" type="password" placeholder="AIzaSy..." />
         <button class="btn-run-ai" id="runAiBtn" onclick="runAiAnalysis()">EXECUTE</button>
       </div>
-      <div class="ai-status" id="aiStatus">// READY. WILL FETCH YAHOO FINANCE HISTORICAL DATA + AI ANALYSIS.</div>
+      <div class="ai-status" id="aiStatus">// 就緒。將取得 Yahoo Finance 歷史資料並進行 AI 技術分析。</div>
 
       <!-- Indicators Table -->
       <div id="indicatorsWrap" style="display:none;margin-bottom:16px">
-        <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:0.12em;margin-bottom:8px;text-transform:uppercase">// TECHNICAL INDICATORS</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:0.12em;margin-bottom:8px;text-transform:uppercase">// 技術指標</div>
         <div id="indicatorsTable"></div>
       </div>
 
@@ -1110,9 +1168,9 @@ function renderDashboard(e) {
   const wins = e.filter(h => (h.profitPct ?? 0) >= 0).length;
   const loss = e.filter(h => (h.profitPct ?? 0) < 0).length;
   document.getElementById('profitCount').textContent = wins;
-  document.getElementById('profitSub').textContent = wins + ' / ' + holdings.length + ' POSITIONS';
+  document.getElementById('profitSub').textContent = wins + ' / ' + holdings.length + ' 持倉';
   document.getElementById('lossCount').textContent = loss;
-  document.getElementById('lossSub').textContent = loss + ' / ' + holdings.length + ' POSITIONS';
+  document.getElementById('lossSub').textContent = loss + ' / ' + holdings.length + ' 持倉';
 
   const pieVals = e.map(h => h.totalValue ?? h.totalCost);
   const total = pieVals.reduce((a,b) => a+b, 0);
@@ -1166,7 +1224,7 @@ function renderDashboard(e) {
 function renderHoldings(e) {
   const el = document.getElementById('holdingsList');
   if (!e.length) {
-    el.innerHTML = '<div class="empty-state"><div class="empty-icon">[NULL]</div><div class="empty-title">NO POSITIONS FOUND</div></div>';
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">[NULL]</div><div class="empty-title">尚無持倉資料</div></div>';
     return;
   }
   el.innerHTML = e.map(h => {
@@ -1189,7 +1247,7 @@ function renderHoldings(e) {
                 <span class="signal ${sig.cls}">${sig.label}</span>
               </div>
               <div class="holding-code">${h.code}</div>
-              <div class="holding-meta">${h.shares.toLocaleString()} SHS · COST ${h.market==='美股'?'$':''}${fmt(h.cost)}</div>
+              <div class="holding-meta">${h.shares.toLocaleString()} 股 · 成本 ${h.market==='美股'?'$':''}${fmt(h.cost)}</div>
             </div>
             <div class="holding-right">
               <div class="holding-price">${priceStr}</div>
@@ -1198,15 +1256,15 @@ function renderHoldings(e) {
           </div>
           <div class="metrics-row">
             <div class="metric-box">
-              <div class="metric-label">MKT VAL</div>
+              <div class="metric-label">市值</div>
               <div class="metric-val" style="color:var(--cyan)">${mktVal}</div>
             </div>
             <div class="metric-box">
-              <div class="metric-label">P&amp;L</div>
+              <div class="metric-label">損益</div>
               <div class="metric-val" style="color:${pnlColor}">${pnl}</div>
             </div>
             <div class="metric-box">
-              <div class="metric-label">RETURN</div>
+              <div class="metric-label">報酬率</div>
               <div class="metric-val" style="color:${pnlColor}">${pnlPct}</div>
             </div>
           </div>
@@ -1221,7 +1279,7 @@ function renderHoldings(e) {
 function renderManage() {
   const el = document.getElementById('manageList');
   if (!holdings.length) {
-    el.innerHTML = '<div class="empty-state"><div class="empty-icon">[NULL]</div><div class="empty-title">NO POSITIONS</div></div>';
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">[NULL]</div><div class="empty-title">尚無持倉</div></div>';
     return;
   }
   el.innerHTML = holdings.map((h, i) => `
@@ -1229,7 +1287,7 @@ function renderManage() {
       <div class="manage-icon">${MARKET_ICON[h.market] || '📊'}</div>
       <div class="manage-info">
         <div class="manage-name">${h.name}</div>
-        <div class="manage-sub">${h.code} // ${h.shares} SHS // COST ${h.market==='美股'?'$':'NT$'}${h.cost}</div>
+        <div class="manage-sub">${h.code} // ${h.shares} 股 // 成本 ${h.market==='美股'?'$':'NT$'}${h.cost}</div>
       </div>
       <button class="del-btn" onclick="deleteStock(${i})">✕</button>
     </div>`).join('');
@@ -1241,7 +1299,7 @@ function addStock() {
   const code = document.getElementById('fCode').value.trim().toUpperCase();
   const shares = parseFloat(document.getElementById('fShares').value);
   const cost = parseFloat(document.getElementById('fCost').value);
-  if (!name || !code || isNaN(shares) || isNaN(cost)) { alert('[ERROR] MISSING FIELDS'); return; }
+  if (!name || !code || isNaN(shares) || isNaN(cost)) { alert('請填入所有欄位'); return; }
   holdings.push({ market, name, code, shares, cost });
   save();
   ['fName','fCode','fShares','fCost'].forEach(id => document.getElementById(id).value = '');
@@ -1278,7 +1336,7 @@ function switchTab(tab, el) {
 
 function updateFormHint() {
   const m = document.getElementById('fMarket').value;
-  document.getElementById('fCostLabel').textContent = m === '美股' ? 'COST (USD)' : 'COST (TWD)';
+  document.getElementById('fCostLabel').textContent = m === '美股' ? '成本（美元）' : '成本（台幣）';
   document.getElementById('fCode').placeholder = m === '美股' ? 'NVDA' : m === 'ETF' ? '00631L' : '2330';
   document.getElementById('fName').placeholder = m === '美股' ? 'Nvidia' : m === 'ETF' ? '元大台灣50正2' : '台積電';
 }
@@ -1286,19 +1344,19 @@ function updateFormHint() {
 // ── Signal Logic (Rule-based) ──
 function getSignal(h) {
   const pct = h.profitPct;
-  if (pct == null) return { label: 'HOLD', cls: 'signal-hold', reason: 'AWAITING PRICE DATA' };
-  if (pct >= 25)   return { label: 'REDUCE', cls: 'signal-sell', reason: 'HIGH GAIN — CONSIDER TAKING PROFIT' };
-  if (pct >= 12)   return { label: 'WATCH', cls: 'signal-watch', reason: 'STRONG GAIN — MONITOR CLOSELY' };
-  if (pct >= -8)   return { label: 'HOLD', cls: 'signal-hold', reason: 'WITHIN NORMAL RANGE' };
-  if (pct >= -15)  return { label: 'WATCH', cls: 'signal-watch', reason: 'DRAWDOWN — REVIEW POSITION' };
-  return           { label: 'CUT LOSS', cls: 'signal-sell', reason: 'SIGNIFICANT LOSS — STOP LOSS ADVISED' };
+  if (pct == null) return { label: '持有', cls: 'signal-hold', reason: '等待報價資料' };
+  if (pct >= 25)   return { label: '減碼', cls: 'signal-sell', reason: '高報酬 — 建議評估獲利了結' };
+  if (pct >= 12)   return { label: '觀察', cls: 'signal-watch', reason: '強勁漲幅 — 密切觀察' };
+  if (pct >= -8)   return { label: '持有', cls: 'signal-hold', reason: '在正常波動範圍內' };
+  if (pct >= -15)  return { label: '觀察', cls: 'signal-watch', reason: '回撤中 — 重新評估部位' };
+  return           { label: '停損', cls: 'signal-sell', reason: '虧損顯著 — 建議執行停損' };
 }
 
 // ── Hero Alert ──
 function renderHeroAlert(e) {
   const alerts = e.map(h => ({ ...getSignal(h), name: h.name }));
-  const sells = alerts.filter(a => a.label === 'REDUCE' || a.label === 'CUT LOSS');
-  const watches = alerts.filter(a => a.label === 'WATCH');
+  const sells = alerts.filter(a => a.label === '減碼' || a.label === '停損');
+  const watches = alerts.filter(a => a.label === '觀察');
   const alertEl = document.getElementById('heroAlert');
   const iconEl = document.getElementById('alertIcon');
   const textEl = document.getElementById('alertText');
@@ -1307,20 +1365,20 @@ function renderHeroAlert(e) {
 
   if (sells.length > 0) {
     alertEl.className = 'hero-alert alert-danger';
-    iconEl.textContent = '!! ALERT';
-    textEl.textContent = sells.map(a => a.name + ': ' + a.label).join(' | ');
-    countEl.textContent = sells.length + ' ACTION';
+    iconEl.textContent = '!! 警報';
+    textEl.textContent = sells.map(a => a.name + '：' + a.label).join(' | ');
+    countEl.textContent = sells.length + ' 需處理';
     countEl.style.color = 'var(--red)';
   } else if (watches.length > 0) {
     alertEl.className = 'hero-alert alert-warn';
-    iconEl.textContent = '>> WATCH';
-    textEl.textContent = watches.map(a => a.name).join(' | ') + ' — MONITOR';
-    countEl.textContent = watches.length + ' POS';
+    iconEl.textContent = '>> 觀察';
+    textEl.textContent = watches.map(a => a.name).join(' | ') + ' — 密切監控';
+    countEl.textContent = watches.length + ' 持倉';
     countEl.style.color = 'var(--yellow)';
   } else {
     alertEl.className = 'hero-alert alert-ok';
-    iconEl.textContent = 'OK SYS';
-    textEl.textContent = 'ALL POSITIONS WITHIN NORMAL PARAMETERS';
+    iconEl.textContent = 'OK 系統';
+    textEl.textContent = '所有持倉均在正常範圍內';
     countEl.textContent = '';
   }
 }
@@ -1337,10 +1395,10 @@ function closeAiModal() {
 
 function crossLabel(val) {
   const map = {
-    GOLDEN: { text: 'GOLDEN X', color: 'var(--green)', glow: 'rgba(0,255,136,0.4)' },
-    DEATH:  { text: 'DEATH X',  color: 'var(--red)',   glow: 'rgba(255,45,85,0.4)' },
-    BULL:   { text: 'BULL',     color: 'var(--cyan)',  glow: 'rgba(0,212,255,0.3)' },
-    BEAR:   { text: 'BEAR',     color: 'var(--orange)',glow: 'rgba(255,149,0,0.3)' },
+    GOLDEN: { text: '黃金交叉', color: 'var(--green)', glow: 'rgba(0,255,136,0.4)' },
+    DEATH:  { text: '死亡交叉', color: 'var(--red)',   glow: 'rgba(255,45,85,0.4)' },
+    BULL:   { text: '多頭排列', color: 'var(--cyan)',  glow: 'rgba(0,212,255,0.3)' },
+    BEAR:   { text: '空頭排列', color: 'var(--orange)',glow: 'rgba(255,149,0,0.3)' },
     NEUTRAL:{ text: '—',        color: 'var(--text3)', glow: 'none' },
     'N/A':  { text: 'N/A',      color: 'var(--text3)', glow: 'none' },
   };
@@ -1354,7 +1412,7 @@ function renderIndicators(indicators) {
   if (!indicators || !Object.keys(indicators).length) { wrap.style.display = 'none'; return; }
 
   const rows = Object.entries(indicators).map(([sym, ind]) => {
-    if (ind.error) return `<div style="font-family:var(--mono);font-size:11px;color:var(--text3);padding:6px 0">${sym}: NO DATA</div>`;
+    if (ind.error) return `<div style="font-family:var(--mono);font-size:11px;color:var(--text3);padding:6px 0">${sym}：無資料</div>`;
 
     const rsiColor = ind.rsi > 70 ? 'var(--red)' : ind.rsi < 30 ? 'var(--green)' : 'var(--text2)';
     const pos52Color = ind.week52_position > 80 ? 'var(--red)' : ind.week52_position < 20 ? 'var(--green)' : 'var(--cyan)';
@@ -1382,7 +1440,7 @@ function renderIndicators(indicators) {
             <div style="font-family:var(--mono);font-size:12px;color:${rsiColor};font-weight:600">${ind.rsi ?? '——'}</div>
           </div>
           <div>
-            <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.1em;margin-bottom:4px">52W POSITION</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.1em;margin-bottom:4px">52 週位置</div>
             <div style="font-family:var(--mono);font-size:12px;color:${pos52Color};font-weight:600">${ind.week52_position != null ? ind.week52_position + '%' : '——'}</div>
           </div>
           <div>
@@ -1465,6 +1523,84 @@ function fmt(n, decimals) {
   return n.toLocaleString('zh-TW', { minimumFractionDigits:d, maximumFractionDigits:d });
 }
 
+// ── Phase 3：自動下單 ─────────────────────────────────────────────────────
+function atHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'X-API-Token': document.getElementById('atToken').value.trim()
+  };
+}
+function atBaseUrl() {
+  return document.getElementById('atUrl').value.trim().replace(/\/$/, '');
+}
+
+async function fetchAtPositions() {
+  const infoEl = document.getElementById('atAccountInfo');
+  infoEl.style.display = 'block';
+  infoEl.textContent = '查詢中...';
+  try {
+    const res = await fetch(atBaseUrl() + '/positions', { headers: atHeaders() });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || res.statusText);
+    infoEl.textContent = data.length
+      ? data.map(p => `${p.code}  持股：${p.quantity}  成本：${p.price}  損益：${p.pnl}`).join('\n')
+      : '目前無持倉';
+  } catch(e) {
+    infoEl.textContent = '錯誤：' + e.message;
+    infoEl.style.color = 'var(--red)';
+  }
+}
+
+async function fetchAtBalance() {
+  const infoEl = document.getElementById('atAccountInfo');
+  infoEl.style.display = 'block';
+  infoEl.textContent = '查詢中...';
+  infoEl.style.color = 'var(--text2)';
+  try {
+    const res = await fetch(atBaseUrl() + '/account', { headers: atHeaders() });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || res.statusText);
+    infoEl.textContent = `帳戶：${data.account_id ?? '—'}\n可用餘額：NT$ ${(data.balance ?? 0).toLocaleString('zh-TW')}`;
+  } catch(e) {
+    infoEl.textContent = '錯誤：' + e.message;
+    infoEl.style.color = 'var(--red)';
+  }
+}
+
+async function confirmOrder() {
+  const code = document.getElementById('atCode').value.trim().toUpperCase();
+  const action = document.getElementById('atAction').value;
+  const qty = parseInt(document.getElementById('atQty').value);
+  const priceVal = document.getElementById('atPrice').value;
+  const price = priceVal ? parseFloat(priceVal) : null;
+
+  if (!code || !qty || qty <= 0) { alert('請填入代號與股數'); return; }
+  if (!confirm(`確認送出委託？\n${action === 'Buy' ? '▲ 買入' : '▼ 賣出'} ${code} × ${qty} 股 @ ${price ?? '市價'}`)) return;
+
+  const btn = document.getElementById('atOrderBtn');
+  btn.disabled = true;
+  btn.textContent = '送出中...';
+  const resultEl = document.getElementById('atOrderResult');
+
+  try {
+    const res = await fetch(atBaseUrl() + '/order', {
+      method: 'POST',
+      headers: atHeaders(),
+      body: JSON.stringify({ code, action, quantity: qty, price })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || res.statusText);
+    resultEl.style.color = 'var(--green)';
+    resultEl.textContent = `✓ 委託成功 | 委託單號：${data.order_id} | 狀態：${data.status}`;
+  } catch(e) {
+    resultEl.style.color = 'var(--red)';
+    resultEl.textContent = '✗ 委託失敗：' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⚡ 確認送出委託';
+  }
+}
+
 // ── Analysis Tab ──────────────────────────────────────────────────────────
 function renderAnalysisAlloc() {
   const e = enrich();
@@ -1528,7 +1664,7 @@ async function renderAnalysisPerf() {
 
   const statusEl = document.getElementById('analysisPerfStatus');
   statusEl.style.display = 'block';
-  statusEl.textContent = 'FETCHING HISTORICAL DATA...';
+  statusEl.textContent = '載入歷史資料中...';
 
   try {
     const res = await fetch('/api/history', {
@@ -1542,7 +1678,7 @@ async function renderAnalysisPerf() {
 
     if (!labels.length) {
       statusEl.style.display = 'block';
-      statusEl.textContent = 'NO HISTORICAL DATA AVAILABLE';
+      statusEl.textContent = '無法取得歷史資料';
       return;
     }
 
@@ -1554,7 +1690,7 @@ async function renderAnalysisPerf() {
         labels,
         datasets: [
           {
-            label: 'PORTFOLIO VALUE',
+            label: '投組市值',
             data: values,
             borderColor: '#00d4ff',
             backgroundColor: 'rgba(0,212,255,0.06)',
@@ -1564,7 +1700,7 @@ async function renderAnalysisPerf() {
             borderWidth: 2
           },
           {
-            label: 'COST BASIS',
+            label: '成本基線',
             data: costLine,
             borderColor: '#ff9500',
             borderDash: [5, 4],
@@ -1595,7 +1731,7 @@ async function renderAnalysisPerf() {
     });
   } catch(err) {
     statusEl.style.display = 'block';
-    statusEl.textContent = 'ERROR: ' + err.message;
+    statusEl.textContent = '錯誤：' + err.message;
   }
 }
 
@@ -1606,10 +1742,10 @@ async function runBacktest() {
   const strategy = document.getElementById('btStrategy').value;
   const range = document.getElementById('btRange').value;
   const capital = parseFloat(document.getElementById('btCapital').value) || 100000;
-  if (!code) { alert('ENTER A TICKER SYMBOL'); return; }
+  if (!code) { alert('請輸入標的代號'); return; }
 
   const btn = document.getElementById('btRunBtn');
-  btn.textContent = '// RUNNING...';
+  btn.textContent = '// 執行中...';
   btn.disabled = true;
 
   try {
@@ -1622,9 +1758,9 @@ async function runBacktest() {
     if (!res.ok) throw new Error(data.error || 'backtest failed');
     renderBacktestResults(data, capital);
   } catch(err) {
-    alert('BACKTEST ERROR: ' + err.message);
+    alert('回測錯誤：' + err.message);
   } finally {
-    btn.textContent = '// RUN BACKTEST';
+    btn.textContent = '// 執行回測';
     btn.disabled = false;
   }
 }
@@ -1638,16 +1774,16 @@ function renderBacktestResults({ equity, trades, metrics }, capital) {
   const bhColor = bhNum >= 0 ? 'var(--green)' : 'var(--red)';
 
   document.getElementById('btMetrics').innerHTML = [
-    { label: 'STRATEGY RETURN', val: metrics.totalReturn, color: retColor },
-    { label: 'BUY & HOLD', val: metrics.buyHoldReturn, color: bhColor },
-    { label: 'MAX DRAWDOWN', val: metrics.maxDrawdown, color: 'var(--red)' },
-    { label: 'WIN RATE', val: metrics.winRate, color: 'var(--cyan)' },
-    { label: 'TOTAL TRADES', val: String(metrics.totalTrades), color: 'var(--text)' },
-    { label: 'FINAL VALUE', val: 'NT$' + metrics.finalValue, color: retNum >= 0 ? 'var(--green)' : 'var(--red)' }
+    { label: '策略報酬率', val: metrics.totalReturn, color: retColor },
+    { label: '買入持有報酬率', val: metrics.buyHoldReturn, color: bhColor },
+    { label: '最大回撤', val: metrics.maxDrawdown, color: 'var(--red)' },
+    { label: '勝率', val: metrics.winRate, color: 'var(--cyan)' },
+    { label: '交易次數', val: String(metrics.totalTrades), color: 'var(--text)' },
+    { label: '最終資金', val: 'NT$' + metrics.finalValue, color: retNum >= 0 ? 'var(--green)' : 'var(--red)' }
   ].map(m => `
-    <div class="card mini-card">
-      <div class="mini-label">${m.label}</div>
-      <div class="mini-value" style="color:${m.color};font-size:18px">${m.val}</div>
+    <div class="card mini-card" style="padding:14px 16px">
+      <div class="mini-label" style="font-size:9px">${m.label}</div>
+      <div class="mini-value" style="color:${m.color};font-size:16px">${m.val}</div>
     </div>`).join('');
 
   const ctx = document.getElementById('btEquityChart');
@@ -1658,7 +1794,7 @@ function renderBacktestResults({ equity, trades, metrics }, capital) {
       labels: equity.map(e => e.date),
       datasets: [
         {
-          label: 'EQUITY',
+          label: '策略淨值',
           data: equity.map(e => e.value),
           borderColor: '#00d4ff',
           backgroundColor: 'rgba(0,212,255,0.06)',
@@ -1699,7 +1835,7 @@ function renderBacktestResults({ equity, trades, metrics }, capital) {
   });
 
   if (!trades.length) {
-    document.getElementById('btTradeLog').innerHTML = '<div style="padding:16px;font-family:var(--mono);font-size:11px;color:var(--text3)">NO TRADES EXECUTED IN THIS PERIOD</div>';
+    document.getElementById('btTradeLog').innerHTML = '<div style="padding:16px;font-family:var(--mono);font-size:11px;color:var(--text3)">此期間無交易紀錄</div>';
     return;
   }
 
@@ -1707,18 +1843,18 @@ function renderBacktestResults({ equity, trades, metrics }, capital) {
     <table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px">
       <thead>
         <tr style="color:var(--text3);border-bottom:1px solid var(--border)">
-          <th style="padding:8px;text-align:left">DATE</th>
-          <th style="padding:8px;text-align:left">ACTION</th>
-          <th style="padding:8px;text-align:right">PRICE</th>
-          <th style="padding:8px;text-align:right">SHARES</th>
-          <th style="padding:8px;text-align:right">P&L</th>
+          <th style="padding:8px;text-align:left">日期</th>
+          <th style="padding:8px;text-align:left">操作</th>
+          <th style="padding:8px;text-align:right">價格</th>
+          <th style="padding:8px;text-align:right">股數</th>
+          <th style="padding:8px;text-align:right">損益</th>
         </tr>
       </thead>
       <tbody>
         ${trades.map(t => `
           <tr style="border-bottom:1px solid rgba(0,180,255,0.06)">
             <td style="padding:8px;color:var(--text2)">${t.date}</td>
-            <td style="padding:8px;color:${t.action==='BUY'?'var(--green)':'var(--red)'}">${t.action==='BUY'?'▲ BUY':'▼ SELL'}</td>
+            <td style="padding:8px;color:${t.action==='BUY'?'var(--green)':'var(--red)'}">${t.action==='BUY'?'▲ 買入':'▼ 賣出'}</td>
             <td style="padding:8px;text-align:right;color:var(--text)">${t.price?.toFixed(2) ?? '—'}</td>
             <td style="padding:8px;text-align:right;color:var(--text)">${t.shares}</td>
             <td style="padding:8px;text-align:right;color:${t.pnl==null?'var(--text3)':t.pnl>=0?'var(--green)':'var(--red)'}">
