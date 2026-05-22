@@ -6,6 +6,7 @@
 <title>股票投資組合</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+TC:wght@300;400;500;700&family=Orbitron:wght@400;600;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 <style>
 :root {
   --bg: #020812;
@@ -605,6 +606,132 @@ body::after {
   font-weight: 700; flex-shrink: 0;
 }
 
+/* ── K 線 Modal ── */
+.kline-overlay {
+  display: none; position: fixed; inset: 0; z-index: 600;
+  background: rgba(2,8,18,0.92);
+  backdrop-filter: blur(10px);
+  align-items: center; justify-content: center; padding: 12px;
+}
+.kline-overlay.show { display: flex; }
+.kline-modal {
+  background: #040e1a; border: 1px solid var(--border2);
+  width: 100%; max-width: 780px;
+  max-height: 92vh; overflow-y: auto;
+  box-shadow: 0 0 60px rgba(0,212,255,0.2);
+  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 100%);
+  position: relative;
+}
+.kline-modal::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--blue), var(--cyan), var(--blue));
+}
+.kline-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; border-bottom: 1px solid var(--border);
+  gap: 12px; flex-wrap: wrap;
+}
+.kline-title {
+  font-family: var(--display); font-size: 15px;
+  color: var(--cyan); letter-spacing: 0.1em;
+  text-shadow: 0 0 10px var(--cyan);
+}
+.kline-close {
+  background: none; border: 1px solid var(--border2);
+  color: var(--text3); font-family: var(--mono);
+  font-size: 13px; padding: 4px 12px; cursor: pointer;
+  transition: all 0.15s; flex-shrink: 0;
+}
+.kline-close:hover { color: var(--red); border-color: var(--red); }
+
+/* Range selector */
+.range-bar {
+  display: flex; gap: 4px; padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto; flex-wrap: nowrap;
+}
+.range-btn {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text3); font-family: var(--mono); font-size: 12px;
+  padding: 5px 12px; cursor: pointer; transition: all 0.15s;
+  white-space: nowrap; flex-shrink: 0;
+  clip-path: polygon(4px 0%, 100% 0%, calc(100% - 4px) 100%, 0% 100%);
+}
+.range-btn.active {
+  background: var(--cyan-dim); color: var(--cyan);
+  border-color: var(--border2);
+  text-shadow: 0 0 6px var(--cyan);
+}
+.range-btn:hover:not(.active) { color: var(--text2); }
+
+/* Chart area */
+.kline-chart-wrap {
+  padding: 16px 20px 8px;
+  position: relative;
+}
+#klineChart { width: 100%; height: 380px; }
+
+/* Zone info */
+.zone-bar {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; padding: 12px 20px;
+  border-top: 1px solid var(--border);
+}
+.zone-card {
+  padding: 12px 14px; border: 1px solid;
+  position: relative; overflow: hidden;
+}
+.zone-card.buy {
+  border-color: rgba(0,255,136,0.3);
+  background: rgba(0,255,136,0.05);
+}
+.zone-card.sell {
+  border-color: rgba(255,45,85,0.3);
+  background: rgba(255,45,85,0.05);
+}
+.zone-label {
+  font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  margin-bottom: 5px;
+}
+.zone-card.buy .zone-label { color: var(--green); }
+.zone-card.sell .zone-label { color: var(--red); }
+.zone-range {
+  font-family: var(--display); font-size: 14px;
+  font-weight: 700; color: white;
+}
+.zone-sub {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text3); margin-top: 4px;
+}
+
+/* RSI + note */
+.kline-note {
+  padding: 10px 20px 16px;
+  font-family: var(--mono); font-size: 12px;
+  color: var(--text2); letter-spacing: 0.04em;
+  border-top: 1px solid var(--border);
+}
+
+/* Loading */
+.kline-loading {
+  display: flex; align-items: center; justify-content: center;
+  height: 380px; flex-direction: column; gap: 12px;
+}
+.kline-spinner {
+  width: 32px; height: 32px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--cyan);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.kline-loading-text {
+  font-family: var(--mono); font-size: 12px;
+  color: var(--text3); letter-spacing: 0.1em;
+}
+
 /* ── AI Modal ── */
 .modal-overlay {
   display: none; position: fixed; inset: 0; z-index: 500;
@@ -888,6 +1015,40 @@ body::after {
 
 </div>
 
+<!-- ── K 線 Modal ── -->
+<div class="kline-overlay" id="klineOverlay">
+  <div class="kline-modal">
+    <div class="kline-header">
+      <div class="kline-title" id="klineTitle">// K 線分析</div>
+      <button class="kline-close" onclick="closeKline()">[ 關閉 ]</button>
+    </div>
+    <div class="range-bar">
+      <button class="range-btn" onclick="setRange('1d')"  >日內</button>
+      <button class="range-btn" onclick="setRange('1wk')" >一週</button>
+      <button class="range-btn active" onclick="setRange('1mo')" >一個月</button>
+      <button class="range-btn" onclick="setRange('3mo')" >三個月</button>
+      <button class="range-btn" onclick="setRange('6mo')" >六個月</button>
+      <button class="range-btn" onclick="setRange('1y')"  >一年</button>
+    </div>
+    <div class="kline-chart-wrap">
+      <div id="klineChart"></div>
+    </div>
+    <div class="zone-bar" id="zoneBar" style="display:none">
+      <div class="zone-card buy">
+        <div class="zone-label">🟢 建議買入區間</div>
+        <div class="zone-range" id="buyZoneText">——</div>
+        <div class="zone-sub">布林下軌 ～ 中軌</div>
+      </div>
+      <div class="zone-card sell">
+        <div class="zone-label">🔴 注意賣出區間</div>
+        <div class="zone-range" id="sellZoneText">——</div>
+        <div class="zone-sub">布林中軌 ～ 上軌</div>
+      </div>
+    </div>
+    <div class="kline-note" id="klineNote"></div>
+  </div>
+</div>
+
 <!-- ── AI Modal ── -->
 <div class="modal-overlay" id="aiModal">
   <div class="modal">
@@ -951,26 +1112,26 @@ setInterval(updateDate, 1000);
 async function fetchAllPrices() {
   if (!holdings.length) return;
   const btn = document.getElementById('refreshBtn');
-  btn.textContent = 'SYNCING...';
+  btn.textContent = '同步中...';
   btn.classList.add('loading');
   btn.disabled = true;
-  await Promise.all(holdings.map(h => fetchOne(h.code)));
-  btn.textContent = 'SYNC';
+
+  // 一次批次呼叫後端 API 取得所有股價
+  try {
+    const symbols = holdings.map(h => h.code).join(',');
+    const res = await fetch('/api/prices?symbols=' + encodeURIComponent(symbols));
+    if (res.ok) {
+      const data = await res.json();
+      Object.entries(data).forEach(([sym, info]) => {
+        if (info.price) prices[sym] = { price: info.price, prev: info.prev };
+      });
+    }
+  } catch(e) {}
+
+  btn.textContent = '同步';
   btn.classList.remove('loading');
   btn.disabled = false;
   renderAll();
-}
-
-async function fetchOne(sym) {
-  try {
-    const yahooSym = /^\d{4,}/.test(sym) ? sym + '.TW' : sym;
-    const url = 'https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(yahooSym) + '?interval=1d&range=1d';
-    const proxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-    const res = await fetch(proxy);
-    const data = await res.json();
-    const meta = data?.chart?.result?.[0]?.meta;
-    if (meta) prices[sym] = { price: meta.regularMarketPrice, prev: meta.previousClose };
-  } catch(e) {}
 }
 
 function enrich() {
@@ -1086,7 +1247,7 @@ function renderHoldings(e) {
     const pnlPct = h.profitPct != null ? (h.profitPct >= 0 ? '+' : '') + h.profitPct.toFixed(2) + '%' : '——';
     const pnlColor = h.profitPct == null ? 'var(--text2)' : h.profitPct >= 0 ? 'var(--green)' : 'var(--red)';
     return `
-      <div class="holding-row">
+      <div class="holding-row" onclick="openKline('${h.code}','${h.market}','${h.name}')" style="cursor:pointer" title="點擊查看 K 線圖">
         <div class="stock-icon">${MARKET_ICON[h.market] || '📊'}</div>
         <div class="holding-info">
           <div style="display:flex;justify-content:space-between;align-items:flex-start">
@@ -1094,6 +1255,7 @@ function renderHoldings(e) {
               <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
                 <div class="holding-name">${h.name}</div>
                 <span class="signal ${sig.cls}">${sig.label}</span>
+                <span style="font-family:var(--mono);font-size:10px;color:var(--text3)">📈 K線</span>
               </div>
               <div class="holding-code">${h.code}</div>
               <div class="holding-meta">${h.shares.toLocaleString()} 股 · 成本 ${h.market==='美股'?'$':''}${fmt(h.cost)}</div>
@@ -1362,7 +1524,168 @@ document.getElementById('aiModal').addEventListener('click', function(e) {
   if (e.target === this) closeAiModal();
 });
 
-function fmt(n, decimals) {
+// ── K 線圖 ──────────────────────────────────────────────
+let klineCurrentSymbol = null;
+let klineCurrentMarket = null;
+let klineCurrentRange  = '1mo';
+let klineChartInstance = null;
+let klineSeries        = null;
+
+function openKline(symbol, market, name) {
+  klineCurrentSymbol = symbol;
+  klineCurrentMarket = market;
+  document.getElementById('klineTitle').textContent = `// ${name}（${symbol}）K 線分析`;
+  document.getElementById('klineOverlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+  loadKline(symbol, market, klineCurrentRange);
+}
+
+function closeKline() {
+  document.getElementById('klineOverlay').classList.remove('show');
+  document.body.style.overflow = '';
+  if (klineChartInstance) { klineChartInstance.remove(); klineChartInstance = null; klineSeries = null; }
+}
+
+function setRange(range) {
+  klineCurrentRange = range;
+  document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  if (klineChartInstance) { klineChartInstance.remove(); klineChartInstance = null; klineSeries = null; }
+  loadKline(klineCurrentSymbol, klineCurrentMarket, range);
+}
+
+async function loadKline(symbol, market, range) {
+  const chartWrap = document.getElementById('klineChart');
+  chartWrap.innerHTML = '<div class="kline-loading"><div class="kline-spinner"></div><div class="kline-loading-text">載入 K 線數據中...</div></div>';
+  document.getElementById('zoneBar').style.display = 'none';
+  document.getElementById('klineNote').textContent = '';
+
+  try {
+    const res = await fetch(`/api/kline?symbol=${encodeURIComponent(symbol)}&market=${encodeURIComponent(market)}&range=${range}`);
+    if (!res.ok) throw new Error('無法取得數據');
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    chartWrap.innerHTML = '';
+
+    // Create chart
+    const isDark = true;
+    const chart = LightweightCharts.createChart(chartWrap, {
+      width:  chartWrap.clientWidth,
+      height: 380,
+      layout: {
+        background: { color: '#040e1a' },
+        textColor: '#7ab8d4',
+      },
+      grid: {
+        vertLines: { color: 'rgba(0,180,255,0.06)' },
+        horzLines: { color: 'rgba(0,180,255,0.06)' },
+      },
+      crosshair: {
+        vertLine: { color: 'rgba(0,212,255,0.5)', width: 1, style: 1 },
+        horzLine: { color: 'rgba(0,212,255,0.5)', width: 1, style: 1 },
+      },
+      rightPriceScale: { borderColor: 'rgba(0,180,255,0.2)' },
+      timeScale: {
+        borderColor: 'rgba(0,180,255,0.2)',
+        timeVisible: range === '1d' || range === '1wk',
+        secondsVisible: false,
+      },
+      handleScroll: true,
+      handleScale: true,
+    });
+
+    klineChartInstance = chart;
+
+    // Candlestick series
+    const candleSeries = chart.addCandlestickSeries({
+      upColor:          '#00ff88',
+      downColor:        '#ff2d55',
+      borderUpColor:    '#00ff88',
+      borderDownColor:  '#ff2d55',
+      wickUpColor:      '#00cc66',
+      wickDownColor:    '#cc2244',
+    });
+    candleSeries.setData(data.candles);
+
+    // MA lines
+    if (data.maLines.ma5.length) {
+      const s = chart.addLineSeries({ color: '#ff9500', lineWidth: 1, priceLineVisible: false, lastValueVisible: false, title: 'MA5' });
+      s.setData(data.maLines.ma5);
+    }
+    if (data.maLines.ma20.length) {
+      const s = chart.addLineSeries({ color: '#00d4ff', lineWidth: 1, priceLineVisible: false, lastValueVisible: false, title: 'MA20' });
+      s.setData(data.maLines.ma20);
+    }
+    if (data.maLines.ma60.length) {
+      const s = chart.addLineSeries({ color: '#bf5af2', lineWidth: 1, priceLineVisible: false, lastValueVisible: false, title: 'MA60' });
+      s.setData(data.maLines.ma60);
+    }
+
+    // Bollinger Bands
+    if (data.bbLines.upper.length) {
+      const bUpper = chart.addLineSeries({ color: 'rgba(0,255,136,0.25)', lineWidth: 1, lineStyle: 2, priceLineVisible: false, lastValueVisible: false, title: '布林上軌' });
+      const bMid   = chart.addLineSeries({ color: 'rgba(0,212,255,0.3)',  lineWidth: 1, lineStyle: 2, priceLineVisible: false, lastValueVisible: false, title: '布林中軌' });
+      const bLower = chart.addLineSeries({ color: 'rgba(255,45,85,0.25)', lineWidth: 1, lineStyle: 2, priceLineVisible: false, lastValueVisible: false, title: '布林下軌' });
+      bUpper.setData(data.bbLines.upper);
+      bMid.setData(data.bbLines.mid);
+      bLower.setData(data.bbLines.lower);
+    }
+
+    // Current price line
+    if (data.currentPrice) {
+      candleSeries.createPriceLine({
+        price: data.currentPrice,
+        color: '#00d4ff',
+        lineWidth: 1,
+        lineStyle: 0,
+        axisLabelVisible: true,
+        title: '現價',
+      });
+    }
+
+    // Buy zone price line
+    if (data.buyZone) {
+      candleSeries.createPriceLine({ price: data.buyZone.min, color: 'rgba(0,255,136,0.6)', lineWidth: 1, lineStyle: 3, axisLabelVisible: false, title: '買入下緣' });
+      candleSeries.createPriceLine({ price: data.buyZone.max, color: 'rgba(0,255,136,0.6)', lineWidth: 1, lineStyle: 3, axisLabelVisible: false, title: '買入上緣' });
+    }
+
+    // Sell zone price line
+    if (data.sellZone) {
+      candleSeries.createPriceLine({ price: data.sellZone.min, color: 'rgba(255,45,85,0.5)', lineWidth: 1, lineStyle: 3, axisLabelVisible: false, title: '賣出下緣' });
+      candleSeries.createPriceLine({ price: data.sellZone.max, color: 'rgba(255,45,85,0.5)', lineWidth: 1, lineStyle: 3, axisLabelVisible: false, title: '賣出上緣' });
+    }
+
+    chart.timeScale().fitContent();
+
+    // Resize on window resize
+    const resizeObs = new ResizeObserver(() => {
+      if (chart && chartWrap.clientWidth) chart.applyOptions({ width: chartWrap.clientWidth });
+    });
+    resizeObs.observe(chartWrap);
+
+    // Zone info
+    if (data.buyZone && data.sellZone) {
+      document.getElementById('zoneBar').style.display = 'grid';
+      document.getElementById('buyZoneText').textContent  = data.buyZone.min  + ' ～ ' + data.buyZone.max;
+      document.getElementById('sellZoneText').textContent = data.sellZone.min + ' ～ ' + data.sellZone.max;
+    }
+
+    if (data.zoneNote) {
+      document.getElementById('klineNote').textContent = '// ' + data.zoneNote;
+    }
+
+  } catch(e) {
+    document.getElementById('klineChart').innerHTML = `<div class="kline-loading"><div class="kline-loading-text">載入失敗：${e.message}</div></div>`;
+  }
+}
+
+// Close on overlay click
+document.getElementById('klineOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeKline();
+});
+
+
   if (n == null || isNaN(n)) return '——';
   const d = decimals != null ? decimals : 2;
   return n.toLocaleString('zh-TW', { minimumFractionDigits:d, maximumFractionDigits:d });
