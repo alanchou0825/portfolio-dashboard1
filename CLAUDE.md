@@ -1,7 +1,8 @@
 # CLAUDE.md — Portfolio Dashboard
 
 ## 專案概覽
-- **網站**：https://portfolio-dashboard1-ten.vercel.app/
+- **網站（原始）**：https://portfolio-dashboard1-ten.vercel.app/
+- **最新部署**：https://portfolio-dashboard1-iota.vercel.app/
 - **部署平台**：Vercel（Serverless Functions）
 - **技術棧**：純 HTML/CSS/JS（無框架）+ Chart.js 4.4.1（CDN）+ Vercel Node.js Serverless Functions
 - **版本**：v2.6 起，依此 CLAUDE.md 持續迭代
