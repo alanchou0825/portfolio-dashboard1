@@ -744,6 +744,8 @@ body::after {
     <div class="tab-item active" onclick="switchTab('dashboard',this)">OVERVIEW</div>
     <div class="tab-item" onclick="switchTab('holdings',this)">ASSETS</div>
     <div class="tab-item" onclick="switchTab('manage',this)">CONFIG</div>
+    <div class="tab-item" onclick="switchTab('analysis',this)">ANALYSIS</div>
+    <div class="tab-item" onclick="switchTab('backtest',this)">BACKTEST</div>
   </div>
 
   <!-- ── DASHBOARD ── -->
@@ -882,6 +884,97 @@ body::after {
       <div class="card">
         <div class="manage-list-header">POSITION REGISTRY</div>
         <div id="manageList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ANALYSIS ── -->
+  <div class="panel" id="panel-analysis">
+    <div class="section">
+      <div class="card chart-card">
+        <div class="chart-header">
+          <div class="chart-title">MARKET ALLOCATION</div>
+          <div class="chart-sub" style="font-family:var(--mono);font-size:10px;color:var(--text3)">// BY MARKET TYPE · TWD VALUE</div>
+        </div>
+        <div class="pie-section">
+          <div class="pie-wrap"><canvas id="analysisAllocChart"></canvas></div>
+          <div class="pie-legend" id="analysisAllocLegend"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="card chart-card">
+        <div class="chart-header">
+          <div class="chart-title">PORTFOLIO PERFORMANCE</div>
+          <div class="chart-sub" style="font-family:var(--mono);font-size:10px;color:var(--text3)">// 6-MONTH EQUITY CURVE VS COST BASIS</div>
+        </div>
+        <div id="analysisPerfStatus" style="font-family:var(--mono);font-size:11px;color:var(--text3);padding:8px 0;display:none">LOADING HISTORICAL DATA...</div>
+        <canvas id="analysisPerfChart" style="width:100%;height:260px"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BACKTEST ── -->
+  <div class="panel" id="panel-backtest">
+    <div class="section">
+      <div class="card form-card">
+        <div class="form-section-label">STRATEGY CONFIG</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <div class="form-label">TICKER</div>
+            <input class="sf-input" id="btCode" placeholder="0050" style="text-transform:uppercase" />
+          </div>
+          <div class="form-group">
+            <div class="form-label">MARKET</div>
+            <select class="sf-select" id="btMarket">
+              <option value="ETF">ETF</option>
+              <option value="台股">TW STOCK</option>
+              <option value="美股">US STOCK</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <div class="form-label">STRATEGY</div>
+            <select class="sf-select" id="btStrategy">
+              <option value="ma_cross">MA CROSS (20/60)</option>
+              <option value="rsi_range">RSI RANGE (30/70)</option>
+              <option value="bollinger">BOLLINGER BREAKOUT</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <div class="form-label">PERIOD</div>
+            <select class="sf-select" id="btRange">
+              <option value="1y">1 YEAR</option>
+              <option value="2y">2 YEARS</option>
+              <option value="5y">5 YEARS</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <div class="form-label">INITIAL CAPITAL (TWD)</div>
+            <input class="sf-input" type="number" id="btCapital" value="100000" />
+          </div>
+        </div>
+        <button class="btn-add" id="btRunBtn" onclick="runBacktest()">// RUN BACKTEST</button>
+      </div>
+    </div>
+
+    <div id="btResults" style="display:none">
+      <div class="section">
+        <div class="mini-grid" id="btMetrics" style="grid-template-columns:repeat(3,1fr)"></div>
+      </div>
+      <div class="section">
+        <div class="card chart-card">
+          <div class="chart-header">
+            <div class="chart-title">EQUITY CURVE</div>
+          </div>
+          <canvas id="btEquityChart" style="width:100%;height:260px"></canvas>
+        </div>
+      </div>
+      <div class="section" style="padding-bottom:24px">
+        <div class="card">
+          <div class="manage-list-header">TRADE LOG (LAST 20)</div>
+          <div id="btTradeLog"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -1177,6 +1270,10 @@ function switchTab(tab, el) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('panel-' + tab).classList.add('active');
+  if (tab === 'analysis') {
+    renderAnalysisAlloc();
+    renderAnalysisPerf();
+  }
 }
 
 function updateFormHint() {
@@ -1366,6 +1463,270 @@ function fmt(n, decimals) {
   if (n == null || isNaN(n)) return '——';
   const d = decimals != null ? decimals : 2;
   return n.toLocaleString('zh-TW', { minimumFractionDigits:d, maximumFractionDigits:d });
+}
+
+// ── Analysis Tab ──────────────────────────────────────────────────────────
+function renderAnalysisAlloc() {
+  const e = enrich();
+  if (!e.length) return;
+
+  const groups = {};
+  e.forEach(h => {
+    const key = h.market || 'OTHER';
+    groups[key] = (groups[key] || 0) + (h.totalValue ?? h.totalCost ?? 0);
+  });
+  const labels = Object.keys(groups);
+  const values = labels.map(k => groups[k]);
+  const total = values.reduce((a, b) => a + b, 0);
+
+  const ctx = document.getElementById('analysisAllocChart');
+  if (window._analysisAllocChart) window._analysisAllocChart.destroy();
+  window._analysisAllocChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: ['#00d4ff','#0066ff','#00ff88','#bf5af2','#ff9500'],
+        borderColor: 'rgba(2,8,18,0.8)',
+        borderWidth: 2,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      cutout: '65%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const pct = total ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+              return ` ${ctx.label}: NT$${Math.round(ctx.parsed).toLocaleString()} (${pct}%)`;
+            }
+          },
+          bodyFont: { family: "'Share Tech Mono'" }
+        }
+      }
+    }
+  });
+
+  const legend = document.getElementById('analysisAllocLegend');
+  const colors = ['#00d4ff','#0066ff','#00ff88','#bf5af2','#ff9500'];
+  legend.innerHTML = labels.map((l, i) => {
+    const pct = total ? ((values[i] / total) * 100).toFixed(1) : 0;
+    return `<div class="pie-legend-item">
+      <div class="pie-legend-dot" style="background:${colors[i % colors.length]}"></div>
+      <div class="pie-legend-label">${l}</div>
+      <div class="pie-legend-val">${pct}%</div>
+    </div>`;
+  }).join('');
+}
+
+async function renderAnalysisPerf() {
+  const e = enrich();
+  if (!e.length) return;
+
+  const statusEl = document.getElementById('analysisPerfStatus');
+  statusEl.style.display = 'block';
+  statusEl.textContent = 'FETCHING HISTORICAL DATA...';
+
+  try {
+    const res = await fetch('/api/history', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ holdings: e.map(h => ({ code: h.code, market: h.market, shares: h.shares, cost: h.cost })) })
+    });
+    if (!res.ok) throw new Error('history API error');
+    const { labels, values, costLine } = await res.json();
+    statusEl.style.display = 'none';
+
+    if (!labels.length) {
+      statusEl.style.display = 'block';
+      statusEl.textContent = 'NO HISTORICAL DATA AVAILABLE';
+      return;
+    }
+
+    const ctx = document.getElementById('analysisPerfChart');
+    if (window._analysisPerfChart) window._analysisPerfChart.destroy();
+    window._analysisPerfChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'PORTFOLIO VALUE',
+            data: values,
+            borderColor: '#00d4ff',
+            backgroundColor: 'rgba(0,212,255,0.06)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 0,
+            borderWidth: 2
+          },
+          {
+            label: 'COST BASIS',
+            data: costLine,
+            borderColor: '#ff9500',
+            borderDash: [5, 4],
+            pointRadius: 0,
+            borderWidth: 1.5
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        scales: {
+          x: {
+            ticks: { color: '#3a6a80', font: { family: "'Share Tech Mono'", size: 10 }, maxTicksLimit: 8 },
+            grid: { color: 'rgba(0,180,255,0.04)' }
+          },
+          y: {
+            ticks: { color: '#3a6a80', font: { family: "'Share Tech Mono'", size: 10 },
+              callback: v => 'NT$' + Math.round(v / 1000) + 'K' },
+            grid: { color: 'rgba(0,180,255,0.04)' }
+          }
+        },
+        plugins: {
+          legend: { labels: { color: '#7ab8d4', font: { family: "'Share Tech Mono'", size: 10 } } },
+          tooltip: { bodyFont: { family: "'Share Tech Mono'" }, titleFont: { family: "'Share Tech Mono'" } }
+        }
+      }
+    });
+  } catch(err) {
+    statusEl.style.display = 'block';
+    statusEl.textContent = 'ERROR: ' + err.message;
+  }
+}
+
+// ── Backtest Tab ──────────────────────────────────────────────────────────
+async function runBacktest() {
+  const code = document.getElementById('btCode').value.trim().toUpperCase();
+  const market = document.getElementById('btMarket').value;
+  const strategy = document.getElementById('btStrategy').value;
+  const range = document.getElementById('btRange').value;
+  const capital = parseFloat(document.getElementById('btCapital').value) || 100000;
+  if (!code) { alert('ENTER A TICKER SYMBOL'); return; }
+
+  const btn = document.getElementById('btRunBtn');
+  btn.textContent = '// RUNNING...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/backtest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, market, strategy, range, capital })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'backtest failed');
+    renderBacktestResults(data, capital);
+  } catch(err) {
+    alert('BACKTEST ERROR: ' + err.message);
+  } finally {
+    btn.textContent = '// RUN BACKTEST';
+    btn.disabled = false;
+  }
+}
+
+function renderBacktestResults({ equity, trades, metrics }, capital) {
+  document.getElementById('btResults').style.display = 'block';
+
+  const retNum = parseFloat(metrics.totalReturn);
+  const retColor = retNum >= 0 ? 'var(--green)' : 'var(--red)';
+  const bhNum = parseFloat(metrics.buyHoldReturn);
+  const bhColor = bhNum >= 0 ? 'var(--green)' : 'var(--red)';
+
+  document.getElementById('btMetrics').innerHTML = [
+    { label: 'STRATEGY RETURN', val: metrics.totalReturn, color: retColor },
+    { label: 'BUY & HOLD', val: metrics.buyHoldReturn, color: bhColor },
+    { label: 'MAX DRAWDOWN', val: metrics.maxDrawdown, color: 'var(--red)' },
+    { label: 'WIN RATE', val: metrics.winRate, color: 'var(--cyan)' },
+    { label: 'TOTAL TRADES', val: String(metrics.totalTrades), color: 'var(--text)' },
+    { label: 'FINAL VALUE', val: 'NT$' + metrics.finalValue, color: retNum >= 0 ? 'var(--green)' : 'var(--red)' }
+  ].map(m => `
+    <div class="card mini-card">
+      <div class="mini-label">${m.label}</div>
+      <div class="mini-value" style="color:${m.color};font-size:18px">${m.val}</div>
+    </div>`).join('');
+
+  const ctx = document.getElementById('btEquityChart');
+  if (window._btEquityChart) window._btEquityChart.destroy();
+  window._btEquityChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: equity.map(e => e.date),
+      datasets: [
+        {
+          label: 'EQUITY',
+          data: equity.map(e => e.value),
+          borderColor: '#00d4ff',
+          backgroundColor: 'rgba(0,212,255,0.06)',
+          fill: true,
+          tension: 0.2,
+          pointRadius: 0,
+          borderWidth: 2
+        },
+        {
+          label: 'COST BASIS',
+          data: equity.map(() => capital),
+          borderColor: '#ff9500',
+          borderDash: [5, 4],
+          pointRadius: 0,
+          borderWidth: 1.5
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      scales: {
+        x: {
+          ticks: { color: '#3a6a80', font: { family: "'Share Tech Mono'", size: 10 }, maxTicksLimit: 10 },
+          grid: { color: 'rgba(0,180,255,0.04)' }
+        },
+        y: {
+          ticks: { color: '#3a6a80', font: { family: "'Share Tech Mono'", size: 10 },
+            callback: v => 'NT$' + Math.round(v / 1000) + 'K' },
+          grid: { color: 'rgba(0,180,255,0.04)' }
+        }
+      },
+      plugins: {
+        legend: { labels: { color: '#7ab8d4', font: { family: "'Share Tech Mono'", size: 10 } } },
+        tooltip: { bodyFont: { family: "'Share Tech Mono'" }, titleFont: { family: "'Share Tech Mono'" } }
+      }
+    }
+  });
+
+  if (!trades.length) {
+    document.getElementById('btTradeLog').innerHTML = '<div style="padding:16px;font-family:var(--mono);font-size:11px;color:var(--text3)">NO TRADES EXECUTED IN THIS PERIOD</div>';
+    return;
+  }
+
+  document.getElementById('btTradeLog').innerHTML = `
+    <table style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11px">
+      <thead>
+        <tr style="color:var(--text3);border-bottom:1px solid var(--border)">
+          <th style="padding:8px;text-align:left">DATE</th>
+          <th style="padding:8px;text-align:left">ACTION</th>
+          <th style="padding:8px;text-align:right">PRICE</th>
+          <th style="padding:8px;text-align:right">SHARES</th>
+          <th style="padding:8px;text-align:right">P&L</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${trades.map(t => `
+          <tr style="border-bottom:1px solid rgba(0,180,255,0.06)">
+            <td style="padding:8px;color:var(--text2)">${t.date}</td>
+            <td style="padding:8px;color:${t.action==='BUY'?'var(--green)':'var(--red)'}">${t.action==='BUY'?'▲ BUY':'▼ SELL'}</td>
+            <td style="padding:8px;text-align:right;color:var(--text)">${t.price?.toFixed(2) ?? '—'}</td>
+            <td style="padding:8px;text-align:right;color:var(--text)">${t.shares}</td>
+            <td style="padding:8px;text-align:right;color:${t.pnl==null?'var(--text3)':t.pnl>=0?'var(--green)':'var(--red)'}">
+              ${t.pnl!=null?(t.pnl>=0?'+':'')+Math.round(t.pnl).toLocaleString():'—'}
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
 }
 </script>
 </body>
