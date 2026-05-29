@@ -1,13 +1,27 @@
 """Shioaji（永豐金）交易封裝層。
 
 所有對 Shioaji API 的呼叫集中在此，main.py 只呼叫這裡的函式。
-正式使用前請先用 simulation=True 測試（見 ERR-003 in CLAUDE.md）。
 """
 import os
+import base64
+import tempfile
 import shioaji as sj
 from shioaji.constant import Action, StockPriceType, OrderType
 
 _api: sj.Shioaji | None = None
+_ca_tmp: tempfile.NamedTemporaryFile | None = None
+
+
+def _write_ca_to_tmp() -> str:
+    """把 SHIOAJI_CA_B64 解碼寫入暫存檔，回傳路徑。"""
+    global _ca_tmp
+    ca_b64 = os.environ.get("SHIOAJI_CA_B64", "")
+    if not ca_b64:
+        raise RuntimeError("SHIOAJI_CA_B64 未設定，請在 Railway Variables 加入 .pfx 的 base64 內容")
+    _ca_tmp = tempfile.NamedTemporaryFile(suffix=".pfx", delete=False)
+    _ca_tmp.write(base64.b64decode(ca_b64))
+    _ca_tmp.flush()
+    return _ca_tmp.name
 
 
 def get_api() -> sj.Shioaji:
@@ -15,17 +29,19 @@ def get_api() -> sj.Shioaji:
     if _api is not None:
         return _api
 
+    api_key = os.getenv("SHIOAJI_API_KEY")
+    secret_key = os.getenv("SHIOAJI_SECRET_KEY")
+    if not api_key or not secret_key:
+        raise RuntimeError("永豐金 API 金鑰尚未設定（SHIOAJI_API_KEY / SHIOAJI_SECRET_KEY）")
+
     simulation = os.getenv("SHIOAJI_SIMULATION", "true").lower() == "true"
     _api = sj.Shioaji(simulation=simulation)
-    _api.login(
-        api_key=os.environ["SHIOAJI_API_KEY"],
-        secret_key=os.environ["SHIOAJI_SECRET_KEY"],
-    )
+    _api.login(api_key=api_key, secret_key=secret_key)
 
-    # 憑證（正式帳戶才需要，simulation 模式可略過）
     if not simulation:
+        ca_path = _write_ca_to_tmp()
         _api.activate_ca(
-            ca_path=os.environ["SHIOAJI_CA_PATH"],
+            ca_path=ca_path,
             ca_passwd=os.environ["SHIOAJI_CA_PASSWD"],
             person_id=os.environ["SHIOAJI_PERSON_ID"],
         )

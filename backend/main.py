@@ -65,16 +65,31 @@ def health() -> dict:
 @app.get("/account")
 def account_info(request: Request) -> dict:
     verify_token(request)
-    return get_account_balance()
+    try:
+        return get_account_balance()
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/positions")
 def positions(request: Request) -> list:
     verify_token(request)
-    return get_positions()
+    try:
+        return get_positions()
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/order")
 def order(req: OrderRequest, request: Request) -> dict:
     verify_token(request)
-    return place_order(req.code, req.action, req.quantity, req.price)
+    try:
+        return place_order(req.code, req.action, req.quantity, req.price)
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
