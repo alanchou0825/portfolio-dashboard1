@@ -88,7 +88,7 @@ body::after {
 
 .app {
   position: relative; z-index: 1;
-  max-width: 780px;
+  max-width: 1200px;
   margin: 0 auto;
   padding-bottom: 100px;
 }
@@ -723,6 +723,91 @@ body::after {
   .mini-grid { grid-template-columns: 1fr 1fr; }
 }
 
+/* ── Light Mode ── */
+body.light {
+  --bg: #f0f5fb;
+  --bg2: #e4edf8;
+  --surface: rgba(255,255,255,0.95);
+  --surface2: rgba(235,245,255,0.8);
+  --border: rgba(0,100,200,0.15);
+  --border2: rgba(0,100,200,0.25);
+  --border-hot: rgba(0,120,220,0.5);
+  --cyan: #0066cc;
+  --cyan2: #0055aa;
+  --cyan-dim: rgba(0,102,204,0.12);
+  --cyan-glow: rgba(0,102,204,0.3);
+  --green: #00995c;
+  --green-dim: rgba(0,153,92,0.12);
+  --red: #cc2244;
+  --red-dim: rgba(204,34,68,0.12);
+  --orange: #cc6600;
+  --text: #0a1929;
+  --text2: #1a4a7a;
+  --text3: #5a88aa;
+  --glow-cyan: 0 0 12px rgba(0,102,204,0.15);
+}
+body.light::before {
+  background-image:
+    linear-gradient(rgba(0,100,200,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,100,200,0.04) 1px, transparent 1px);
+}
+body.light::after {
+  background:
+    radial-gradient(ellipse 60% 40% at 15% 10%, rgba(180,210,255,0.3) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 85% 80%, rgba(200,230,255,0.2) 0%, transparent 60%);
+}
+body.light .scanlines { opacity: 0.3; }
+body.light .nav {
+  background: rgba(240,245,251,0.95);
+  border-bottom-color: rgba(0,100,200,0.2);
+}
+body.light .nav::after { background: linear-gradient(90deg, transparent, var(--cyan), transparent); }
+body.light .card {
+  background: rgba(255,255,255,0.9);
+  border-color: rgba(0,100,200,0.15);
+}
+body.light .card::before { background: none; }
+body.light .card::after { background: rgba(255,255,255,0.5); }
+body.light .tab-bar { background: rgba(235,245,255,0.9); border-color: rgba(0,100,200,0.2); }
+body.light .tab-item { border-right-color: rgba(0,100,200,0.15); }
+body.light .tab-item.active { background: rgba(0,102,204,0.1); color: var(--cyan); }
+body.light .hero-card {
+  background: linear-gradient(135deg, rgba(0,60,150,0.08), rgba(0,120,255,0.04));
+  border-color: rgba(0,100,200,0.2);
+}
+body.light .sf-input, body.light .sf-select {
+  background: rgba(240,248,255,0.9);
+  border-color: rgba(0,100,200,0.2);
+  color: var(--text);
+}
+body.light .learn-info-box { background: rgba(0,100,200,0.05); border-color: rgba(0,100,200,0.15); }
+body.light .learn-info-box.learn-insight { background: rgba(0,153,92,0.06); border-color: rgba(0,153,92,0.2); }
+
+/* ── Theme Toggle Button ── */
+.theme-btn {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  font-size: 15px;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  line-height: 1;
+}
+.theme-btn:hover { background: var(--cyan-dim); color: var(--cyan); border-color: var(--cyan); }
+
+/* ── Learn 2-col layout ── */
+.learn-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 700px) {
+  .learn-2col { grid-template-columns: 1fr; }
+}
+
 /* ── Learn Tab ── */
 .learn-info-grid {
   display: grid;
@@ -799,6 +884,7 @@ body::after {
       <div class="nav-right">
         <span class="update-time" id="updateTime">--:--</span>
         <button class="refresh-btn" id="refreshBtn" onclick="fetchAllPrices()">同步</button>
+        <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="切換主題">☀</button>
       </div>
     </div>
   </nav>
@@ -1193,62 +1279,63 @@ function respond(data) {
 
 <!-- ── LEARN ── -->
 <div class="panel" id="panel-learn">
+  <!-- Row 1: 黃金交叉 + 死亡交叉 -->
   <div class="section">
-    <div class="card chart-card">
-      <div class="chart-header">
-        <div class="chart-title">黃金交叉</div>
-        <div class="chart-sub" style="font-family:var(--mono);font-size:10px;color:var(--text3)">// MA5 穿越 MA20 向上 · 做多訊號</div>
+    <div class="learn-2col">
+      <div class="card chart-card">
+        <div class="chart-header">
+          <div class="chart-title">黃金交叉</div>
+          <div class="chart-sub" style="font-family:var(--mono);font-size:10px;color:var(--text3)">// MA5 穿越 MA20 向上 · 做多訊號</div>
+        </div>
+        <div style="position:relative;height:200px"><canvas id="learnGoldenChart"></canvas></div>
+        <div class="learn-info-grid">
+          <div class="learn-info-box">
+            <div class="learn-info-label">定義</div>
+            <div class="learn-info-text">短期均線（MA5）由下往上穿越長期均線（MA20），代表短期動能強於長期趨勢，市場轉為多方主導。</div>
+          </div>
+          <div class="learn-info-box">
+            <div class="learn-info-label">操作參考</div>
+            <div class="learn-info-text">交叉確認當日或次日開盤進場做多，搭配成交量放大效果更佳。止損設在 MA20 下方。</div>
+          </div>
+          <div class="learn-info-box learn-insight">
+            <div class="learn-info-label">關鍵觀察</div>
+            <div class="learn-info-text">訊號出現後若 MA5 持續走揚且兩線間距擴大，趨勢確立；若交叉後快速回頭，需警惕假突破。</div>
+          </div>
+        </div>
       </div>
-      <div style="position:relative;height:160px"><canvas id="learnGoldenChart"></canvas></div>
-      <div class="learn-info-grid">
-        <div class="learn-info-box">
-          <div class="learn-info-label">定義</div>
-          <div class="learn-info-text">短期均線（MA5）由下往上穿越長期均線（MA20），代表短期動能強於長期趨勢，市場轉為多方主導。</div>
+      <div class="card chart-card">
+        <div class="chart-header">
+          <div class="chart-title">死亡交叉</div>
+          <div class="chart-sub" style="font-family:var(--mono);font-size:10px;color:var(--text3)">// MA5 穿越 MA20 向下 · 出場警示</div>
         </div>
-        <div class="learn-info-box">
-          <div class="learn-info-label">操作參考</div>
-          <div class="learn-info-text">交叉確認當日或次日開盤進場做多，搭配成交量放大效果更佳。止損設在 MA20 下方。</div>
-        </div>
-        <div class="learn-info-box learn-insight">
-          <div class="learn-info-label">關鍵觀察</div>
-          <div class="learn-info-text">訊號出現後若 MA5 持續走揚且兩線間距擴大，趨勢確立；若交叉後快速回頭，需警惕假突破。</div>
+        <div style="position:relative;height:200px"><canvas id="learnDeathChart"></canvas></div>
+        <div class="learn-info-grid">
+          <div class="learn-info-box">
+            <div class="learn-info-label">定義</div>
+            <div class="learn-info-text">短期均線（MA5）由上往下穿越長期均線（MA20），代表短期賣壓加重，多方力量減弱，市場可能轉空。</div>
+          </div>
+          <div class="learn-info-box">
+            <div class="learn-info-label">操作參考</div>
+            <div class="learn-info-text">死亡交叉出現時考慮減碼或出場，避免持續跟跌。可搭配 RSI 確認是否已超賣再決定是否留倉。</div>
+          </div>
+          <div class="learn-info-box learn-insight">
+            <div class="learn-info-label">關鍵觀察</div>
+            <div class="learn-info-text">在下跌趨勢中死亡交叉後出現量縮反彈，需留意反彈是否持續；若無量，通常是逃命波而非底部。</div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="section">
-    <div class="card chart-card">
-      <div class="chart-header">
-        <div class="chart-title">死亡交叉</div>
-        <div class="chart-sub" style="font-family:var(--mono);font-size:10px;color:var(--text3)">// MA5 穿越 MA20 向下 · 出場警示</div>
-      </div>
-      <div style="position:relative;height:160px"><canvas id="learnDeathChart"></canvas></div>
-      <div class="learn-info-grid">
-        <div class="learn-info-box">
-          <div class="learn-info-label">定義</div>
-          <div class="learn-info-text">短期均線（MA5）由上往下穿越長期均線（MA20），代表短期賣壓加重，多方力量減弱，市場可能轉空。</div>
-        </div>
-        <div class="learn-info-box">
-          <div class="learn-info-label">操作參考</div>
-          <div class="learn-info-text">死亡交叉出現時考慮減碼或出場，避免持續跟跌。可搭配 RSI 確認是否已超賣再決定是否留倉。</div>
-        </div>
-        <div class="learn-info-box learn-insight">
-          <div class="learn-info-label">關鍵觀察</div>
-          <div class="learn-info-text">在下跌趨勢中死亡交叉後出現量縮反彈，需留意反彈是否持續；若無量，通常是逃命波而非底部。</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
+  <!-- Row 2: RSI full width -->
   <div class="section">
     <div class="card chart-card">
       <div class="chart-header">
         <div class="chart-title">RSI 指標</div>
-        <div class="chart-sub" style="font-family:var(--mono);font-size:10px;color:var(--text3)">// 相對強弱指數 · 30 超賣 / 70 超買</div>
+        <div class="chart-sub" style="font-family:var(--mono);font-size:10px;color:var(--text3)">// 相對強弱指數 · 30 超賣 / 70 超買 · 背離訊號</div>
       </div>
-      <div style="position:relative;height:110px"><canvas id="learnRsiPriceChart"></canvas></div>
-      <div style="position:relative;height:80px;margin-top:4px"><canvas id="learnRsiChart"></canvas></div>
+      <div style="position:relative;height:140px"><canvas id="learnRsiPriceChart"></canvas></div>
+      <div style="position:relative;height:100px;margin-top:4px"><canvas id="learnRsiChart"></canvas></div>
       <div class="learn-info-grid">
         <div class="learn-info-box">
           <div class="learn-info-label">定義</div>
@@ -1260,56 +1347,57 @@ function respond(data) {
         </div>
         <div class="learn-info-box learn-insight">
           <div class="learn-info-label">關鍵觀察</div>
-          <div class="learn-info-text">當股價創新高但 RSI 未創高（背離），是趨勢反轉的強力警示；反之股價創低但 RSI 未創低，可能即將反彈。</div>
+          <div class="learn-info-text">當股價創新高但 RSI 未創高（頂背離），是趨勢反轉的強力警示；股價創低但 RSI 未創低（底背離），可能即將反彈。</div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Row 3: 支撐壓力 + 量價關係 -->
   <div class="section">
-    <div class="card chart-card">
-      <div class="chart-header">
-        <div class="chart-title">支撐壓力</div>
-        <div class="chart-sub" style="font-family:var(--mono);font-size:10px;color:var(--text3)">// 水平支撐線與壓力線 · 震盪區間示意</div>
+    <div class="learn-2col">
+      <div class="card chart-card">
+        <div class="chart-header">
+          <div class="chart-title">支撐壓力</div>
+          <div class="chart-sub" style="font-family:var(--mono);font-size:10px;color:var(--text3)">// 水平支撐線與壓力線 · 震盪區間示意</div>
+        </div>
+        <div style="position:relative;height:200px"><canvas id="learnSRChart"></canvas></div>
+        <div class="learn-info-grid">
+          <div class="learn-info-box">
+            <div class="learn-info-label">定義</div>
+            <div class="learn-info-text">支撐線是價格多次下跌後反彈的低點連線；壓力線是多次上漲後回落的高點連線，兩者構成震盪區間。</div>
+          </div>
+          <div class="learn-info-box">
+            <div class="learn-info-label">操作參考</div>
+            <div class="learn-info-text">價格接近支撐線時考慮買進；接近壓力線時考慮獲利了結。若放量突破壓力，壓力轉支撐，可加碼。</div>
+          </div>
+          <div class="learn-info-box learn-insight">
+            <div class="learn-info-label">關鍵觀察</div>
+            <div class="learn-info-text">支撐或壓力被有效突破的關鍵在於「放量」。無量突破通常是假突破，需等收盤確認再行動。</div>
+          </div>
+        </div>
       </div>
-      <div style="position:relative;height:160px"><canvas id="learnSRChart"></canvas></div>
-      <div class="learn-info-grid">
-        <div class="learn-info-box">
-          <div class="learn-info-label">定義</div>
-          <div class="learn-info-text">支撐線是價格多次下跌後反彈的低點連線；壓力線是價格多次上漲後回落的高點連線。兩者構成震盪區間。</div>
+      <div class="card chart-card">
+        <div class="chart-header">
+          <div class="chart-title">量價關係</div>
+          <div class="chart-sub" style="font-family:var(--mono);font-size:10px;color:var(--text3)">// 股價 + 成交量 · 爆量突破螢光色標示</div>
         </div>
-        <div class="learn-info-box">
-          <div class="learn-info-label">操作參考</div>
-          <div class="learn-info-text">價格接近支撐線時可考慮買進；接近壓力線時可考慮獲利了結。若突破壓力，壓力轉支撐，可加碼。</div>
-        </div>
-        <div class="learn-info-box learn-insight">
-          <div class="learn-info-label">關鍵觀察</div>
-          <div class="learn-info-text">支撐或壓力被有效突破的關鍵在於「放量」。無量突破通常是假突破，需等收盤確認再行動。</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="card chart-card">
-      <div class="chart-header">
-        <div class="chart-title">量價關係</div>
-        <div class="chart-sub" style="font-family:var(--mono);font-size:10px;color:var(--text3)">// 股價 + 成交量 · 爆量突破螢光色標示</div>
-      </div>
-      <div style="position:relative;height:110px"><canvas id="learnVolPriceChart"></canvas></div>
-      <div style="position:relative;height:70px;margin-top:4px"><canvas id="learnVolChart"></canvas></div>
-      <div class="learn-info-grid">
-        <div class="learn-info-box">
-          <div class="learn-info-label">定義</div>
-          <div class="learn-info-text">量價同步上漲是強勢訊號；價漲量縮代表動能衰竭；價跌量縮代表賣壓不重；價跌量增代表主力出貨。</div>
-        </div>
-        <div class="learn-info-box">
-          <div class="learn-info-label">操作參考</div>
-          <div class="learn-info-text">爆量突破前高（螢光色柱）是強力買進訊號。量縮回測不破前高支撐，是加碼的好時機。</div>
-        </div>
-        <div class="learn-info-box learn-insight">
-          <div class="learn-info-label">關鍵觀察</div>
-          <div class="learn-info-text">長期量縮整理後突然爆量，往往是主力進場的訊號；但需搭配價格是否突破關鍵壓力才能確認。</div>
+        <div style="position:relative;height:130px"><canvas id="learnVolPriceChart"></canvas></div>
+        <div style="position:relative;height:60px;margin-top:4px"><canvas id="learnVolChart"></canvas></div>
+        <div style="position:relative;height:60px;margin-top:4px"><canvas id="learnVolMaChart"></canvas></div>
+        <div class="learn-info-grid">
+          <div class="learn-info-box">
+            <div class="learn-info-label">定義</div>
+            <div class="learn-info-text">量價同步上漲是強勢訊號；價漲量縮代表動能衰竭；價跌量縮代表賣壓不重；價跌量增代表主力出貨。</div>
+          </div>
+          <div class="learn-info-box">
+            <div class="learn-info-label">操作參考</div>
+            <div class="learn-info-text">爆量突破前高（螢光色柱）是強力買進訊號。量縮回測不破前高支撐，是加碼的好時機。</div>
+          </div>
+          <div class="learn-info-box learn-insight">
+            <div class="learn-info-label">關鍵觀察</div>
+            <div class="learn-info-text">長期量縮整理後突然爆量，往往是主力進場的訊號；但需搭配價格是否突破關鍵壓力才能確認。</div>
+          </div>
         </div>
       </div>
     </div>
@@ -1608,177 +1696,274 @@ function switchTab(tab, el) {
   if (tab === 'learn') renderLearnCharts();
 }
 
-// ── Learn Charts ──
-let _learnChartsRendered = false;
-function renderLearnCharts() {
-  if (_learnChartsRendered) return;
-  _learnChartsRendered = true;
+// ── Theme Toggle ──
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light');
+  document.getElementById('themeBtn').textContent = isLight ? '☽' : '☀';
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  _learnCharts.forEach(c => c.destroy());
+  _learnCharts = [];
+  if (document.getElementById('panel-learn').classList.contains('active')) renderLearnCharts();
+}
+(function initTheme() {
+  if (localStorage.getItem('theme') === 'light') {
+    document.body.classList.add('light');
+    const btn = document.getElementById('themeBtn');
+    if (btn) btn.textContent = '☽';
+  }
+})();
 
+// ── Learn Charts ──
+let _learnCharts = [];
+function renderLearnCharts() {
+  if (_learnCharts.length) return;
+
+  const isLight = document.body.classList.contains('light');
   const mono = 'Share Tech Mono';
-  const gridColor = 'rgba(0,212,255,0.08)';
-  const tickColor = '#7ab8d4';
+  const gridColor = isLight ? 'rgba(0,80,160,0.08)' : 'rgba(0,212,255,0.08)';
+  const tickColor = isLight ? '#1a4a7a' : '#7ab8d4';
+  const priceColor = isLight ? '#0a1929' : '#e0f4ff';
+  const tooltipBg = isLight ? 'rgba(240,248,255,0.97)' : 'rgba(0,10,30,0.95)';
+  const tooltipBorder = isLight ? 'rgba(0,100,200,0.3)' : 'rgba(0,212,255,0.3)';
+  const tooltipTitle = isLight ? '#1a4a7a' : '#7ab8d4';
+  const tooltipBody = isLight ? '#0a1929' : '#00d4ff';
+
+  const mkTooltip = () => ({
+    backgroundColor: tooltipBg,
+    borderColor: tooltipBorder,
+    borderWidth: 1,
+    titleFont: { family: mono, size: 10 },
+    bodyFont: { family: mono, size: 11 },
+    titleColor: tooltipTitle,
+    bodyColor: tooltipBody,
+    padding: 8,
+  });
+
   const baseOpts = {
     responsive: true, maintainAspectRatio: false,
-    animation: false,
-    plugins: { legend: { display: false }, tooltip: { enabled: false } },
+    animation: { duration: 600 },
+    plugins: { legend: { display: false }, tooltip: { enabled: true, ...mkTooltip() } },
     scales: {
       x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { family: mono, size: 9 }, maxTicksLimit: 8 } },
       y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { family: mono, size: 9 }, maxTicksLimit: 5 } }
     }
   };
 
+  function mkGrad(canvas, h, color1, color2) {
+    const ctx = canvas.getContext('2d');
+    const g = ctx.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, color1); g.addColorStop(1, color2);
+    return g;
+  }
+
+  const labels = Array.from({ length: 40 }, (_, i) => `D${i+1}`);
+
   const labels = Array.from({ length: 40 }, (_, i) => i + 1);
 
-  // — 黃金交叉 sample data —
+  // — 黃金交叉 —
   const gcPrice = [95,93,91,90,88,87,89,91,90,88,87,86,85,84,83,85,88,92,96,100,104,107,109,111,112,114,116,117,119,120,121,122,123,124,125,126,127,128,129,130];
   const gcMA5  = gcPrice.map((_, i) => i<4?null: gcPrice.slice(i-4,i+1).reduce((a,b)=>a+b)/5);
   const gcMA20 = gcPrice.map((_, i) => i<19?null:gcPrice.slice(i-19,i+1).reduce((a,b)=>a+b)/20);
-  const gcCross = labels.map((_, i) => gcMA5[i]!==null && gcMA20[i]!==null && gcMA5[i-1]!==null && gcMA5[i-1]<gcMA20[i-1] && gcMA5[i]>=gcMA20[i] ? gcPrice[i] : null);
-  new Chart(document.getElementById('learnGoldenChart'), {
+  const gcCrossIdx = labels.findIndex((_, i) => gcMA5[i]!==null && gcMA20[i]!==null && i>0 && gcMA5[i-1]<gcMA20[i-1] && gcMA5[i]>=gcMA20[i]);
+  const gcCross = labels.map((_, i) => i===gcCrossIdx ? gcPrice[i] : null);
+  const gcFill = labels.map((_, i) => gcMA5[i]!==null && gcMA20[i]!==null && gcMA5[i]>gcMA20[i] ? gcMA5[i] : null);
+  const gcEl = document.getElementById('learnGoldenChart');
+  const gcGrad = mkGrad(gcEl, 200, 'rgba(0,255,136,0.18)', 'rgba(0,255,136,0)');
+  _learnCharts.push(new Chart(gcEl, {
     type: 'line',
-    data: {
-      labels,
-      datasets: [
-        { data: gcPrice, borderColor: '#e0f4ff', borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
-        { data: gcMA5,  borderColor: '#00d4ff',  borderWidth: 1.5, pointRadius: 0, tension: 0.4, borderDash: [] },
-        { data: gcMA20, borderColor: '#ff9500',  borderWidth: 1.5, pointRadius: 0, tension: 0.4 },
-        { data: gcCross, borderColor: 'transparent', backgroundColor: '#00ff88', pointRadius: labels.map((_,i)=>gcCross[i]?8:0), pointStyle: 'triangle', type: 'scatter' }
-      ]
-    },
-    options: { ...baseOpts,
-      plugins: { ...baseOpts.plugins,
-        legend: { display: true, labels: { color: '#7ab8d4', font: { family: mono, size: 10 }, boxWidth: 20,
-          generateLabels: () => [
-            { text: '股價', strokeStyle: '#e0f4ff', lineWidth: 2, fillStyle: 'transparent' },
-            { text: 'MA5',  strokeStyle: '#00d4ff', lineWidth: 2, fillStyle: 'transparent' },
-            { text: 'MA20', strokeStyle: '#ff9500', lineWidth: 2, fillStyle: 'transparent' },
-            { text: '黃金交叉', fillStyle: '#00ff88', strokeStyle: 'transparent' }
-          ]
-        }}
-      }
-    }
-  });
+    data: { labels, datasets: [
+      { label: '股價', data: gcPrice, borderColor: priceColor, borderWidth: 2, pointRadius: 0, tension: 0.3 },
+      { label: 'MA5',  data: gcMA5,  borderColor: '#00d4ff', borderWidth: 2, pointRadius: 0, tension: 0.4 },
+      { label: 'MA20', data: gcMA20, borderColor: '#ff9500', borderWidth: 2, pointRadius: 0, tension: 0.4 },
+      { label: 'MA5>MA20 區間', data: gcFill, borderColor: 'transparent', backgroundColor: gcGrad, fill: '-2', pointRadius: 0, tension: 0.4 },
+      { label: '黃金交叉點', data: gcCross, type: 'scatter', backgroundColor: '#00ff88', borderColor: '#00ff88',
+        pointRadius: labels.map((_,i)=>gcCross[i]?10:0), pointStyle: 'triangle', pointHoverRadius: 12 }
+    ]},
+    options: { ...baseOpts, plugins: { ...baseOpts.plugins,
+      legend: { display: true, labels: { color: tickColor, font: { family: mono, size: 10 }, boxWidth: 14,
+        filter: item => item.datasetIndex < 3 || item.datasetIndex === 4
+      }},
+      tooltip: { ...baseOpts.plugins.tooltip, callbacks: {
+        title: ctx => `${ctx[0].label}`,
+        label: ctx => {
+          if (ctx.datasetIndex === 4) return ` ▲ 黃金交叉！價格 ${ctx.raw}`;
+          const names = ['股價','MA5','MA20'];
+          return names[ctx.datasetIndex] ? ` ${names[ctx.datasetIndex]}: ${ctx.raw?.toFixed?ctx.raw.toFixed(1):ctx.raw}` : null;
+        }
+      }}
+    }}
+  }));
 
-  // — 死亡交叉 sample data —
+  // — 死亡交叉 —
   const dcPrice = [130,132,131,133,134,132,130,128,126,124,122,120,119,118,116,114,112,110,108,106,104,103,102,101,100,99,98,97,96,95,95,94,94,93,93,92,92,91,91,90];
   const dcMA5  = dcPrice.map((_, i) => i<4?null: dcPrice.slice(i-4,i+1).reduce((a,b)=>a+b)/5);
   const dcMA20 = dcPrice.map((_, i) => i<19?null:dcPrice.slice(i-19,i+1).reduce((a,b)=>a+b)/20);
-  const dcCross = labels.map((_, i) => dcMA5[i]!==null && dcMA20[i]!==null && dcMA5[i-1]!==null && dcMA5[i-1]>dcMA20[i-1] && dcMA5[i]<=dcMA20[i] ? dcPrice[i] : null);
-  new Chart(document.getElementById('learnDeathChart'), {
+  const dcCrossIdx = labels.findIndex((_, i) => dcMA5[i]!==null && dcMA20[i]!==null && i>0 && dcMA5[i-1]>dcMA20[i-1] && dcMA5[i]<=dcMA20[i]);
+  const dcCross = labels.map((_, i) => i===dcCrossIdx ? dcPrice[i] : null);
+  const dcFill = labels.map((_, i) => dcMA5[i]!==null && dcMA20[i]!==null && dcMA5[i]<dcMA20[i] ? dcMA5[i] : null);
+  const dcEl = document.getElementById('learnDeathChart');
+  const dcGrad = mkGrad(dcEl, 200, 'rgba(255,45,85,0.18)', 'rgba(255,45,85,0)');
+  _learnCharts.push(new Chart(dcEl, {
     type: 'line',
-    data: {
-      labels,
-      datasets: [
-        { data: dcPrice, borderColor: '#e0f4ff', borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
-        { data: dcMA5,  borderColor: '#00d4ff',  borderWidth: 1.5, pointRadius: 0, tension: 0.4 },
-        { data: dcMA20, borderColor: '#ff9500',  borderWidth: 1.5, pointRadius: 0, tension: 0.4 },
-        { data: dcCross, borderColor: 'transparent', backgroundColor: '#ff2d55', pointRadius: labels.map((_,i)=>dcCross[i]?8:0), pointStyle: 'triangle', type: 'scatter' }
-      ]
-    },
-    options: { ...baseOpts,
-      plugins: { ...baseOpts.plugins,
-        legend: { display: true, labels: { color: '#7ab8d4', font: { family: mono, size: 10 }, boxWidth: 20,
-          generateLabels: () => [
-            { text: '股價', strokeStyle: '#e0f4ff', lineWidth: 2, fillStyle: 'transparent' },
-            { text: 'MA5',  strokeStyle: '#00d4ff', lineWidth: 2, fillStyle: 'transparent' },
-            { text: 'MA20', strokeStyle: '#ff9500', lineWidth: 2, fillStyle: 'transparent' },
-            { text: '死亡交叉', fillStyle: '#ff2d55', strokeStyle: 'transparent' }
-          ]
-        }}
-      }
-    }
-  });
+    data: { labels, datasets: [
+      { label: '股價', data: dcPrice, borderColor: priceColor, borderWidth: 2, pointRadius: 0, tension: 0.3 },
+      { label: 'MA5',  data: dcMA5,  borderColor: '#00d4ff', borderWidth: 2, pointRadius: 0, tension: 0.4 },
+      { label: 'MA20', data: dcMA20, borderColor: '#ff9500', borderWidth: 2, pointRadius: 0, tension: 0.4 },
+      { label: 'MA5<MA20 區間', data: dcFill, borderColor: 'transparent', backgroundColor: dcGrad, fill: '-2', pointRadius: 0, tension: 0.4 },
+      { label: '死亡交叉點', data: dcCross, type: 'scatter', backgroundColor: '#ff2d55', borderColor: '#ff2d55',
+        pointRadius: labels.map((_,i)=>dcCross[i]?10:0), pointStyle: 'triangle', pointHoverRadius: 12 }
+    ]},
+    options: { ...baseOpts, plugins: { ...baseOpts.plugins,
+      legend: { display: true, labels: { color: tickColor, font: { family: mono, size: 10 }, boxWidth: 14,
+        filter: item => item.datasetIndex < 3 || item.datasetIndex === 4
+      }},
+      tooltip: { ...baseOpts.plugins.tooltip, callbacks: {
+        title: ctx => `${ctx[0].label}`,
+        label: ctx => {
+          if (ctx.datasetIndex === 4) return ` ▼ 死亡交叉！價格 ${ctx.raw}`;
+          const names = ['股價','MA5','MA20'];
+          return names[ctx.datasetIndex] ? ` ${names[ctx.datasetIndex]}: ${ctx.raw?.toFixed?ctx.raw.toFixed(1):ctx.raw}` : null;
+        }
+      }}
+    }}
+  }));
 
-  // — RSI sample data —
+  // — RSI —
   const rsiPrice = [100,102,104,103,105,107,106,108,110,109,108,106,104,102,100,98,97,96,95,96,98,100,102,104,106,108,110,112,111,110,109,108,107,108,110,113,116,115,114,113];
   function calcRSI(prices, period=14) {
     return prices.map((_, i) => {
       if (i < period) return null;
       let gains=0, losses=0;
-      for (let j = i-period+1; j <= i; j++) {
-        const d = prices[j]-prices[j-1]; if (d>0) gains+=d; else losses-=d;
-      }
-      const rs = losses===0 ? 100 : gains/losses;
-      return 100 - 100/(1+rs);
+      for (let j=i-period+1; j<=i; j++) { const d=prices[j]-prices[j-1]; if(d>0)gains+=d; else losses-=d; }
+      const rs = losses===0?100:gains/losses;
+      return parseFloat((100 - 100/(1+rs)).toFixed(1));
     });
   }
   const rsiVals = calcRSI(rsiPrice);
-  new Chart(document.getElementById('learnRsiPriceChart'), {
+  const rsiPriceEl = document.getElementById('learnRsiPriceChart');
+  const rsiPriceGrad = mkGrad(rsiPriceEl, 140, 'rgba(0,212,255,0.15)', 'rgba(0,212,255,0)');
+  _learnCharts.push(new Chart(rsiPriceEl, {
     type: 'line',
-    data: { labels, datasets: [{ data: rsiPrice, borderColor: '#00d4ff', borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: { target: 'origin', above: 'rgba(0,212,255,0.05)' } }] },
-    options: { ...baseOpts, scales: { x: { ...baseOpts.scales.x, ticks: { display: false } }, y: { ...baseOpts.scales.y } } }
-  });
-  new Chart(document.getElementById('learnRsiChart'), {
+    data: { labels, datasets: [
+      { label: '股價', data: rsiPrice, borderColor: '#00d4ff', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: true, backgroundColor: rsiPriceGrad }
+    ]},
+    options: { ...baseOpts, scales: {
+      x: { ...baseOpts.scales.x, ticks: { display: false } },
+      y: { ...baseOpts.scales.y, ticks: { color: tickColor, font: { family: mono, size: 9 }, maxTicksLimit: 4 } }
+    }, plugins: { ...baseOpts.plugins,
+      tooltip: { ...baseOpts.plugins.tooltip, callbacks: { label: ctx => ` 股價: ${ctx.raw}` } }
+    }}
+  }));
+  const rsiEl = document.getElementById('learnRsiChart');
+  const rsiOverboughtGrad = mkGrad(rsiEl, 100, 'rgba(255,45,85,0.15)', 'rgba(255,45,85,0.02)');
+  const rsiOversoldGrad = mkGrad(rsiEl, 100, 'rgba(0,255,136,0.02)', 'rgba(0,255,136,0.15)');
+  _learnCharts.push(new Chart(rsiEl, {
     type: 'line',
-    data: {
-      labels,
-      datasets: [
-        { data: rsiVals, borderColor: '#ff9500', borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
-        { data: labels.map(()=>70), borderColor: 'rgba(255,45,85,0.6)', borderWidth: 1, borderDash: [4,3], pointRadius: 0 },
-        { data: labels.map(()=>30), borderColor: 'rgba(0,255,136,0.6)', borderWidth: 1, borderDash: [4,3], pointRadius: 0 }
-      ]
-    },
+    data: { labels, datasets: [
+      { label: 'RSI', data: rsiVals, borderColor: '#ff9500', borderWidth: 2, pointRadius: 0, tension: 0.3 },
+      { label: '超買線(70)', data: labels.map(()=>70), borderColor: 'rgba(255,45,85,0.7)', borderWidth: 1.5, borderDash: [5,3], pointRadius: 0, fill: false },
+      { label: '超賣線(30)', data: labels.map(()=>30), borderColor: 'rgba(0,255,136,0.7)', borderWidth: 1.5, borderDash: [5,3], pointRadius: 0, fill: false },
+    ]},
     options: { ...baseOpts, scales: {
       x: { ...baseOpts.scales.x },
-      y: { ...baseOpts.scales.y, min: 0, max: 100, ticks: { color: tickColor, font: { family: mono, size: 9 }, callback: v => v===30||v===70||v===50?v:'' } }
+      y: { ...baseOpts.scales.y, min: 0, max: 100, ticks: { color: tickColor, font: { family: mono, size: 9 }, callback: v => v===0||v===30||v===50||v===70||v===100?v:'' } }
+    }, plugins: { ...baseOpts.plugins,
+      legend: { display: true, labels: { color: tickColor, font: { family: mono, size: 10 }, boxWidth: 14 } },
+      tooltip: { ...baseOpts.plugins.tooltip, callbacks: {
+        label: ctx => {
+          const v = ctx.raw;
+          if (ctx.datasetIndex !== 0) return null;
+          const tag = v >= 70 ? ' ⚠ 超買' : v <= 30 ? ' ✓ 超賣' : '';
+          return ` RSI: ${v}${tag}`;
+        }
+      }}
     }}
-  });
+  }));
 
-  // — 支撐壓力 sample data —
-  const srLabels = Array.from({ length: 50 }, (_, i) => i + 1);
+  // — 支撐壓力 —
+  const srLabels = Array.from({ length: 50 }, (_, i) => `D${i+1}`);
   const support = 88, resistance = 112;
-  const srPrice = srLabels.map((_, i) => {
-    const base = support + (resistance - support) * (0.5 + 0.4 * Math.sin(i * 0.35));
-    return Math.round((base + (Math.random() - 0.5) * 4) * 10) / 10;
-  });
-  const srFill = srLabels.map(()=>null);
-  new Chart(document.getElementById('learnSRChart'), {
+  const srPrice = [93,96,99,103,107,110,112,110,108,105,102,99,96,93,90,89,88,89,91,94,97,101,104,108,111,112,110,107,104,100,97,93,90,88,89,92,95,99,103,107,110,112,111,108,105,102,99,95,91,88];
+  _learnCharts.push(new Chart(document.getElementById('learnSRChart'), {
     type: 'line',
-    data: {
-      labels: srLabels,
-      datasets: [
-        { data: srPrice, borderColor: '#e0f4ff', borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
-        { data: srLabels.map(()=>resistance), borderColor: 'rgba(255,45,85,0.8)', borderWidth: 1.5, borderDash: [6,3], pointRadius: 0, label: '壓力' },
-        { data: srLabels.map(()=>support),    borderColor: 'rgba(0,255,136,0.8)', borderWidth: 1.5, borderDash: [6,3], pointRadius: 0, label: '支撐' },
-        { data: srLabels.map(()=>resistance), borderColor: 'transparent', backgroundColor: 'rgba(255,45,85,0.06)', fill: '+1', pointRadius: 0 },
-        { data: srLabels.map(()=>support),    borderColor: 'transparent', backgroundColor: 'rgba(0,255,136,0.06)', fill: false, pointRadius: 0 }
-      ]
-    },
-    options: { ...baseOpts,
-      plugins: { ...baseOpts.plugins,
-        legend: { display: true, labels: { color: '#7ab8d4', font: { family: mono, size: 10 }, boxWidth: 20,
-          generateLabels: () => [
-            { text: '股價', strokeStyle: '#e0f4ff', lineWidth: 2, fillStyle: 'transparent' },
-            { text: '壓力線', strokeStyle: 'rgba(255,45,85,0.8)', lineWidth: 2, fillStyle: 'transparent' },
-            { text: '支撐線', strokeStyle: 'rgba(0,255,136,0.8)', lineWidth: 2, fillStyle: 'transparent' }
-          ]
-        }}
-      }
-    }
-  });
+    data: { labels: srLabels, datasets: [
+      { label: '股價', data: srPrice, borderColor: priceColor, borderWidth: 2, pointRadius: srPrice.map((v,i)=>{
+        if(i===0)return 0;
+        const prev=srPrice[i-1];
+        return (prev<support+2&&v>=support-2)||(prev>resistance-2&&v<=resistance+2)?4:0;
+      }), pointBackgroundColor: srPrice.map((v,i)=>{
+        if(i===0)return 'transparent';
+        return srPrice[i-1]<support+2?'rgba(0,255,136,0.9)':'rgba(255,45,85,0.9)';
+      }), tension: 0.3 },
+      { label: '壓力線', data: srLabels.map(()=>resistance), borderColor: 'rgba(255,45,85,0.9)', borderWidth: 2, borderDash: [6,3], pointRadius: 0, fill: false },
+      { label: '支撐線', data: srLabels.map(()=>support),    borderColor: 'rgba(0,255,136,0.9)', borderWidth: 2, borderDash: [6,3], pointRadius: 0, fill: false },
+      { label: '', data: srLabels.map(()=>resistance), borderColor:'transparent', backgroundColor:'rgba(255,45,85,0.07)', fill:'+1', pointRadius:0 },
+      { label: '', data: srLabels.map(()=>support),    borderColor:'transparent', backgroundColor:'rgba(0,255,136,0.07)', fill:false, pointRadius:0 }
+    ]},
+    options: { ...baseOpts, plugins: { ...baseOpts.plugins,
+      legend: { display: true, labels: { color: tickColor, font: { family: mono, size: 10 }, boxWidth: 14,
+        filter: item => item.datasetIndex < 3
+      }},
+      tooltip: { ...baseOpts.plugins.tooltip, callbacks: {
+        label: ctx => {
+          if (ctx.datasetIndex !== 0) return null;
+          const v = ctx.raw;
+          const tag = v >= resistance-2 ? ' → 接近壓力' : v <= support+2 ? ' → 接近支撐' : '';
+          return ` 股價: ${v}${tag}`;
+        }
+      }}
+    }}
+  }));
 
-  // — 量價關係 sample data —
-  const vpLabels = Array.from({ length: 40 }, (_, i) => i + 1);
+  // — 量價關係 —
+  const vpLabels = Array.from({ length: 40 }, (_, i) => `D${i+1}`);
   const vpPrice = [100,101,100,99,100,101,102,101,100,99,100,101,102,103,102,101,100,101,102,103,104,105,104,103,102,103,104,105,106,107,108,109,110,111,112,111,110,111,112,113];
-  const vpVol   = vpLabels.map((_, i) => {
-    if (i === 31) return 9800;
-    if (i === 30) return 8200;
-    return 1000 + Math.random() * 2000;
-  });
-  const vpVolColor = vpVol.map((v, i) => v > 7000 ? 'rgba(0,255,136,0.85)' : vpPrice[i] >= (vpPrice[i-1]||vpPrice[i]) ? 'rgba(0,212,255,0.5)' : 'rgba(255,45,85,0.5)');
-  new Chart(document.getElementById('learnVolPriceChart'), {
+  const vpVol   = [1200,1100,900,800,950,1000,1100,900,850,800,900,1000,1100,1200,1000,900,800,950,1100,1300,1200,1400,1100,900,850,1000,1200,1400,1600,1800,8200,9800,2200,1800,1500,1200,1000,1100,1300,1500];
+  const volMA5  = vpVol.map((_, i) => i<4?null: vpVol.slice(i-4,i+1).reduce((a,b)=>a+b)/5);
+  const vpPriceEl = document.getElementById('learnVolPriceChart');
+  const vpGrad = mkGrad(vpPriceEl, 130, 'rgba(0,212,255,0.18)', 'rgba(0,212,255,0)');
+  _learnCharts.push(new Chart(vpPriceEl, {
     type: 'line',
-    data: { labels: vpLabels, datasets: [{ data: vpPrice, borderColor: '#00d4ff', borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: { target: 'origin', above: 'rgba(0,212,255,0.05)' } }] },
-    options: { ...baseOpts, scales: { x: { ...baseOpts.scales.x, ticks: { display: false } }, y: { ...baseOpts.scales.y } } }
-  });
-  new Chart(document.getElementById('learnVolChart'), {
+    data: { labels: vpLabels, datasets: [
+      { label: '股價', data: vpPrice, borderColor: '#00d4ff', borderWidth: 2, pointRadius: 0, tension: 0.3, fill: true, backgroundColor: vpGrad }
+    ]},
+    options: { ...baseOpts, scales: {
+      x: { ...baseOpts.scales.x, ticks: { display: false } },
+      y: { ...baseOpts.scales.y }
+    }, plugins: { ...baseOpts.plugins, tooltip: { ...baseOpts.plugins.tooltip, callbacks: { label: ctx => ` 股價: ${ctx.raw}` } } }}
+  }));
+  const vpVolColor = vpVol.map((v,i) => v > 7000 ? 'rgba(0,255,136,0.9)' : vpPrice[i] >= (vpPrice[i-1]??vpPrice[i]) ? 'rgba(0,180,255,0.6)' : 'rgba(255,45,85,0.6)');
+  _learnCharts.push(new Chart(document.getElementById('learnVolChart'), {
     type: 'bar',
-    data: { labels: vpLabels, datasets: [{ data: vpVol, backgroundColor: vpVolColor, borderWidth: 0 }] },
+    data: { labels: vpLabels, datasets: [
+      { label: '成交量', data: vpVol, backgroundColor: vpVolColor, borderWidth: 0 }
+    ]},
     options: { ...baseOpts, scales: {
       x: { ...baseOpts.scales.x },
-      y: { ...baseOpts.scales.y, ticks: { color: tickColor, font: { family: mono, size: 9 }, callback: v => v >= 1000 ? (v/1000).toFixed(0)+'K' : v } }
+      y: { ...baseOpts.scales.y, ticks: { color: tickColor, font: { family: mono, size: 9 }, callback: v => v>=1000?(v/1000).toFixed(0)+'K':v } }
+    }, plugins: { ...baseOpts.plugins,
+      tooltip: { ...baseOpts.plugins.tooltip, callbacks: {
+        label: ctx => {
+          const v = ctx.raw;
+          const tag = v > 7000 ? ' 🔆 爆量！' : '';
+          return ` 成交量: ${(v/1000).toFixed(1)}K${tag}`;
+        }
+      }}
     }}
-  });
+  }));
+  _learnCharts.push(new Chart(document.getElementById('learnVolMaChart'), {
+    type: 'line',
+    data: { labels: vpLabels, datasets: [
+      { label: '量能MA5', data: volMA5, borderColor: '#ff9500', borderWidth: 1.5, borderDash: [4,3], pointRadius: 0, tension: 0.4 }
+    ]},
+    options: { ...baseOpts, scales: {
+      x: { ...baseOpts.scales.x },
+      y: { ...baseOpts.scales.y, ticks: { color: tickColor, font: { family: mono, size: 9 }, callback: v => v>=1000?(v/1000).toFixed(0)+'K':v } }
+    }, plugins: { ...baseOpts.plugins,
+      legend: { display: true, labels: { color: tickColor, font: { family: mono, size: 10 }, boxWidth: 14 } },
+      tooltip: { ...baseOpts.plugins.tooltip, callbacks: { label: ctx => ` 量MA5: ${(ctx.raw/1000).toFixed(1)}K` } }
+    }}
+  }));
 }
 
 function updateFormHint() {
