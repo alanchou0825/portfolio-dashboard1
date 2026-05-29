@@ -713,6 +713,9 @@ body::after {
   animation: glitch 0.8s ease both;
 }
 
+@media (max-width: 600px) {
+  .learn-info-grid { grid-template-columns: 1fr; }
+}
 @media (max-width: 480px) {
   .form-grid { grid-template-columns: 1fr; }
   .hero-meta { grid-template-columns: 1fr 1fr 1fr; }
@@ -721,11 +724,17 @@ body::after {
 }
 
 /* ── Learn Tab ── */
+.learn-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
 .learn-info-box {
   background: rgba(0,212,255,0.04);
   border: 1px solid rgba(0,212,255,0.15);
   border-radius: 6px;
-  padding: 12px;
+  padding: 10px 12px;
 }
 .learn-info-box.learn-insight {
   border-color: rgba(0,255,136,0.25);
@@ -1190,8 +1199,8 @@ function respond(data) {
         <div class="chart-title">黃金交叉</div>
         <div class="chart-sub" style="font-family:var(--mono);font-size:10px;color:var(--text3)">// MA5 穿越 MA20 向上 · 做多訊號</div>
       </div>
-      <canvas id="learnGoldenChart" style="width:100%;height:200px"></canvas>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px">
+      <canvas id="learnGoldenChart" style="width:100%;height:160px"></canvas>
+      <div class="learn-info-grid">
         <div class="learn-info-box">
           <div class="learn-info-label">定義</div>
           <div class="learn-info-text">短期均線（MA5）由下往上穿越長期均線（MA20），代表短期動能強於長期趨勢，市場轉為多方主導。</div>
@@ -1214,8 +1223,8 @@ function respond(data) {
         <div class="chart-title">死亡交叉</div>
         <div class="chart-sub" style="font-family:var(--mono);font-size:10px;color:var(--text3)">// MA5 穿越 MA20 向下 · 出場警示</div>
       </div>
-      <canvas id="learnDeathChart" style="width:100%;height:200px"></canvas>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px">
+      <canvas id="learnDeathChart" style="width:100%;height:160px"></canvas>
+      <div class="learn-info-grid">
         <div class="learn-info-box">
           <div class="learn-info-label">定義</div>
           <div class="learn-info-text">短期均線（MA5）由上往下穿越長期均線（MA20），代表短期賣壓加重，多方力量減弱，市場可能轉空。</div>
@@ -1238,9 +1247,9 @@ function respond(data) {
         <div class="chart-title">RSI 指標</div>
         <div class="chart-sub" style="font-family:var(--mono);font-size:10px;color:var(--text3)">// 相對強弱指數 · 30 超賣 / 70 超買</div>
       </div>
-      <canvas id="learnRsiPriceChart" style="width:100%;height:140px"></canvas>
-      <canvas id="learnRsiChart" style="width:100%;height:100px;margin-top:4px"></canvas>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px">
+      <canvas id="learnRsiPriceChart" style="width:100%;height:110px"></canvas>
+      <canvas id="learnRsiChart" style="width:100%;height:80px;margin-top:4px"></canvas>
+      <div class="learn-info-grid">
         <div class="learn-info-box">
           <div class="learn-info-label">定義</div>
           <div class="learn-info-text">RSI 衡量一段期間內漲幅與跌幅的相對強度，數值介於 0–100。RSI＞70 為超買，RSI＜30 為超賣。</div>
@@ -1263,8 +1272,8 @@ function respond(data) {
         <div class="chart-title">支撐壓力</div>
         <div class="chart-sub" style="font-family:var(--mono);font-size:10px;color:var(--text3)">// 水平支撐線與壓力線 · 震盪區間示意</div>
       </div>
-      <canvas id="learnSRChart" style="width:100%;height:200px"></canvas>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px">
+      <canvas id="learnSRChart" style="width:100%;height:160px"></canvas>
+      <div class="learn-info-grid">
         <div class="learn-info-box">
           <div class="learn-info-label">定義</div>
           <div class="learn-info-text">支撐線是價格多次下跌後反彈的低點連線；壓力線是價格多次上漲後回落的高點連線。兩者構成震盪區間。</div>
@@ -1287,9 +1296,9 @@ function respond(data) {
         <div class="chart-title">量價關係</div>
         <div class="chart-sub" style="font-family:var(--mono);font-size:10px;color:var(--text3)">// 股價 + 成交量 · 爆量突破螢光色標示</div>
       </div>
-      <canvas id="learnVolPriceChart" style="width:100%;height:140px"></canvas>
-      <canvas id="learnVolChart" style="width:100%;height:80px;margin-top:4px"></canvas>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px">
+      <canvas id="learnVolPriceChart" style="width:100%;height:110px"></canvas>
+      <canvas id="learnVolChart" style="width:100%;height:70px;margin-top:4px"></canvas>
+      <div class="learn-info-grid">
         <div class="learn-info-box">
           <div class="learn-info-label">定義</div>
           <div class="learn-info-text">量價同步上漲是強勢訊號；價漲量縮代表動能衰竭；價跌量縮代表賣壓不重；價跌量增代表主力出貨。</div>
