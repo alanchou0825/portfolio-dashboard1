@@ -1774,8 +1774,8 @@ function renderLearnCharts() {
       { label: 'MA5',  data: gcMA5,  borderColor: '#00d4ff', borderWidth: 2, pointRadius: 0, tension: 0.4 },
       { label: 'MA20', data: gcMA20, borderColor: '#ff9500', borderWidth: 2, pointRadius: 0, tension: 0.4 },
       { label: 'MA5>MA20 區間', data: gcFill, borderColor: 'transparent', backgroundColor: gcGrad, fill: '-2', pointRadius: 0, tension: 0.4 },
-      { label: '黃金交叉點', data: gcCross, type: 'scatter', backgroundColor: '#00ff88', borderColor: '#00ff88',
-        pointRadius: labels.map((_,i)=>gcCross[i]?10:0), pointStyle: 'triangle', pointHoverRadius: 12 }
+      { label: '黃金交叉點', data: gcCross, type: 'scatter', backgroundColor: '#00ff88', borderColor: '#ffffff', borderWidth: 2,
+        pointRadius: labels.map((_,i)=>gcCross[i]?14:0), pointStyle: 'triangle', pointHoverRadius: 16 }
     ]},
     options: { ...baseOpts, plugins: { ...baseOpts.plugins,
       legend: { display: true, labels: { color: tickColor, font: { family: mono, size: 10 }, boxWidth: 14,
@@ -1808,8 +1808,8 @@ function renderLearnCharts() {
       { label: 'MA5',  data: dcMA5,  borderColor: '#00d4ff', borderWidth: 2, pointRadius: 0, tension: 0.4 },
       { label: 'MA20', data: dcMA20, borderColor: '#ff9500', borderWidth: 2, pointRadius: 0, tension: 0.4 },
       { label: 'MA5<MA20 區間', data: dcFill, borderColor: 'transparent', backgroundColor: dcGrad, fill: '-2', pointRadius: 0, tension: 0.4 },
-      { label: '死亡交叉點', data: dcCross, type: 'scatter', backgroundColor: '#ff2d55', borderColor: '#ff2d55',
-        pointRadius: labels.map((_,i)=>dcCross[i]?10:0), pointStyle: 'triangle', pointHoverRadius: 12 }
+      { label: '死亡交叉點', data: dcCross, type: 'scatter', backgroundColor: '#ff2d55', borderColor: '#ffffff', borderWidth: 2,
+        pointRadius: labels.map((_,i)=>dcCross[i]?14:0), pointStyle: 'triangle', pointHoverRadius: 16 }
     ]},
     options: { ...baseOpts, plugins: { ...baseOpts.plugins,
       legend: { display: true, labels: { color: tickColor, font: { family: mono, size: 10 }, boxWidth: 14,
