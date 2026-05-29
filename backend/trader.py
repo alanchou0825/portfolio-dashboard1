@@ -2,6 +2,7 @@
 
 所有對 Shioaji API 的呼叫集中在此，main.py 只呼叫這裡的函式。
 """
+from __future__ import annotations
 import os
 import base64
 import tempfile
