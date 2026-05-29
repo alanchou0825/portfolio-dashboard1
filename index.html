@@ -6,6 +6,7 @@
 <title>PORTFOLIO//SYS</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+TC:wght@300;400;500;700&family=Orbitron:wght@400;600;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 <style>
 :root {
   --bg: #020812;
@@ -718,6 +719,34 @@ body::after {
   .hero-meta-val { font-size: 11px; }
   .mini-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* ── K-Line Popup ── */
+#klinePopup {
+  display:none; position:fixed; z-index:300;
+  background:rgba(2,12,28,0.97); border:1px solid rgba(0,212,255,0.4);
+  box-shadow:0 0 30px rgba(0,212,255,0.15), 0 12px 40px rgba(0,0,0,0.7);
+  pointer-events:auto;
+  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 100%);
+}
+#klinePopup::after {
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+}
+.kl-header {
+  padding:10px 14px; border-bottom:1px solid rgba(0,180,255,0.1);
+  display:flex; justify-content:space-between; align-items:flex-start; gap:12px;
+}
+.kl-name { font-size:13px; font-weight:600; color:var(--text); }
+.kl-code { font-family:var(--mono); font-size:10px; color:var(--cyan); margin-top:1px; letter-spacing:0.08em; }
+.kl-price { font-family:var(--display); font-size:13px; font-weight:600; color:white; text-align:right; }
+.kl-chg { font-family:var(--mono); font-size:10px; text-align:right; margin-top:2px; }
+.kl-status { padding:0 14px 4px; font-family:var(--mono); font-size:9px; color:var(--text3); letter-spacing:0.05em; min-height:14px; }
+.kl-footer {
+  padding:6px 14px 10px; border-top:1px solid rgba(0,180,255,0.08);
+  display:flex; gap:12px; flex-wrap:wrap;
+}
+.kl-leg { display:flex; align-items:center; gap:4px; font-family:var(--mono); font-size:9px; color:var(--text3); letter-spacing:0.04em; }
+.kl-leg-line { width:16px; height:2px; flex-shrink:0; }
 </style>
 </head>
 <body>
@@ -824,13 +853,6 @@ body::after {
       </div>
     </div>
 
-    <div class="section">
-      <div class="card rate-bar">
-        <div class="rate-label">美元兌台幣匯率</div>
-        <input class="rate-input" type="number" id="usdRate" value="32" onchange="onRateChange()" />
-      </div>
-    </div>
-
   </div>
 
   <!-- ── HOLDINGS ── -->
@@ -843,10 +865,7 @@ body::after {
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- ── MANAGE ── -->
-  <div class="panel" id="panel-manage">
     <div class="section">
       <div class="card form-card">
         <div class="form-section-label">新增持倉</div>
@@ -887,10 +906,23 @@ body::after {
       </div>
     </div>
 
+    <div class="section">
+      <div class="card rate-bar">
+        <div class="rate-label">美元兌台幣匯率</div>
+        <input class="rate-input" type="number" id="usdRate" value="32" onchange="onRateChange()" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MANAGE ── -->
+  <div class="panel" id="panel-manage">
     <!-- ── 自動下單面板（Phase 3）── -->
     <div class="section" style="padding-bottom:24px">
       <div class="card form-card">
-        <div class="form-section-label">自動下單（永豐金 API）</div>
+        <div class="form-section-label" style="display:flex;align-items:center;gap:10px">
+          自動下單（永豐金 API）
+          <span id="atStatus" style="font-family:var(--mono);font-size:10px;font-weight:normal;letter-spacing:0.05em;color:var(--text3)">● 未連線</span>
+        </div>
         <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:12px;letter-spacing:0.05em">
           // 需部署 Python 後端至 Railway，並在永豐金開通 API 權限
         </div>
@@ -898,7 +930,7 @@ body::after {
         <div class="form-grid">
           <div class="form-group full">
             <div class="form-label">後端服務網址</div>
-            <input class="sf-input" id="atUrl" placeholder="https://xxx.railway.app" style="width:100%" />
+            <input class="sf-input" id="atUrl" placeholder="https://xxx.railway.app" value="https://portfolio-trader-production.up.railway.app" style="width:100%" />
           </div>
           <div class="form-group full">
             <div class="form-label">API Token</div>
@@ -909,6 +941,7 @@ body::after {
         <div style="display:flex;gap:8px;margin:12px 0">
           <button class="btn-add" style="flex:1;padding:10px" onclick="fetchAtPositions()">查詢持倉</button>
           <button class="btn-add" style="flex:1;padding:10px" onclick="fetchAtBalance()">帳戶餘額</button>
+          <button class="btn-add" style="flex:1;padding:10px;background:rgba(0,255,136,0.08);border-color:rgba(0,255,136,0.3);color:var(--green)" onclick="saveAtConfig()">儲存設定</button>
         </div>
         <div id="atAccountInfo" style="font-family:var(--mono);font-size:11px;color:var(--text2);background:rgba(0,180,255,0.04);border:1px solid var(--border);padding:10px;min-height:40px;white-space:pre-wrap;display:none"></div>
 
@@ -941,6 +974,63 @@ body::after {
           ⚡ 確認送出委託
         </button>
         <div id="atOrderResult" style="font-family:var(--mono);font-size:11px;margin-top:8px;min-height:20px"></div>
+      </div>
+    </div>
+
+    <!-- ── Google Sheets 備份 ── -->
+    <div class="section" style="padding-bottom:24px">
+      <div class="card form-card">
+        <div class="form-section-label">雲端備份（Google Sheets）</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:12px;letter-spacing:0.05em">
+          // 持倉資料備份至 Google Sheets，換裝置也不怕
+        </div>
+
+        <details style="margin-bottom:14px">
+          <summary style="font-family:var(--mono);font-size:10px;color:var(--text2);cursor:pointer;user-select:none;letter-spacing:0.05em">▶ 設定說明（展開）</summary>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:10px;line-height:1.8;border-left:2px solid var(--border);padding-left:10px">
+            1. 開啟新的 Google 試算表<br>
+            2. 上方選單 → 擴充功能 → Apps Script<br>
+            3. 刪除預設程式碼，貼上下方程式碼後儲存<br>
+            4. 點「部署」→「新增部署作業」→ 類型選「網頁應用程式」<br>
+            5. 執行身分：我、存取權：所有人 → 部署 → 複製 URL 貼到下方
+          </div>
+          <pre style="font-family:var(--mono);font-size:9.5px;color:var(--cyan);background:rgba(0,180,255,0.04);border:1px solid var(--border);padding:10px;margin-top:8px;overflow-x:auto;white-space:pre-wrap">function doGet(e) {
+  var sheetName = (e &amp;&amp; e.parameter &amp;&amp; e.parameter.sheet) ? e.parameter.sheet : 'holdings';
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(sheetName);
+  if (!sheet || sheet.getLastRow() &lt; 2) return respond({holdings:[]});
+  var rows = sheet.getRange(2,1,sheet.getLastRow()-1,5).getValues();
+  var holdings = rows.filter(function(r){return r[0];}).map(function(r){
+    return {market:String(r[0]),name:String(r[1]),code:String(r[2]),shares:Number(r[3]),cost:Number(r[4])};
+  });
+  return respond({holdings:holdings});
+}
+function doPost(e) {
+  var data = JSON.parse(e.postData.contents);
+  var sheetName = data.sheet || 'holdings';
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(sheetName) || ss.insertSheet(sheetName);
+  sheet.clearContents();
+  sheet.appendRow(['市場','名稱','代號','股數','成本']);
+  data.holdings.forEach(function(h){sheet.appendRow([h.market,h.name,h.code,h.shares,h.cost]);});
+  return respond({ok:true,saved:data.holdings.length});
+}
+function respond(data) {
+  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
+}</pre>
+        </details>
+
+        <div class="form-group full" style="margin-bottom:10px">
+          <div class="form-label">Apps Script 網址</div>
+          <input class="sf-input" id="gsUrl" placeholder="https://script.google.com/macros/s/..." style="width:100%" />
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <button class="btn-add" style="flex:1;padding:10px" onclick="backupToSheets()">備份持倉</button>
+          <button class="btn-add" style="flex:1;padding:10px" onclick="restoreFromSheets()">從 Sheets 還原</button>
+          <button class="btn-add" style="flex:1;padding:10px;background:rgba(0,255,136,0.08);border-color:rgba(0,255,136,0.3);color:var(--green)" onclick="saveGsUrl(this)">儲存網址</button>
+        </div>
+        <div id="gsStatus" style="font-family:var(--mono);font-size:11px;margin-top:8px;min-height:18px"></div>
       </div>
     </div>
   </div>
@@ -1065,6 +1155,28 @@ body::after {
   </div>
 </div>
 
+<!-- ── K-Line Popup ── -->
+<div id="klinePopup" onmouseenter="klCancelHide()" onmouseleave="klStartHide()">
+  <div class="kl-header">
+    <div>
+      <div class="kl-name" id="klName">—</div>
+      <div class="kl-code" id="klCode">—</div>
+    </div>
+    <div>
+      <div class="kl-price" id="klPrice">—</div>
+      <div class="kl-chg" id="klChg"></div>
+    </div>
+  </div>
+  <div class="kl-status" id="klStatus">// 載入中...</div>
+  <div id="klChart" style="height:200px"></div>
+  <div class="kl-footer">
+    <div class="kl-leg"><div class="kl-leg-line" style="background:#00d4ff"></div>MA5</div>
+    <div class="kl-leg"><div class="kl-leg-line" style="background:#ff9500"></div>MA20</div>
+    <div class="kl-leg" style="color:var(--green)">▲ 黃金交叉</div>
+    <div class="kl-leg" style="color:var(--red)">▼ 死亡交叉</div>
+  </div>
+</div>
+
 <script>
 const PIE_COLORS = ['#00d4ff','#0066ff','#00ff88','#bf5af2','#ff9500','#ff2d55','#ffe500','#5ac8fa','#34c759','#ff6b6b'];
 const MARKET_ICON = { '台股':'🇹🇼', '美股':'🇺🇸', 'ETF':'📊' };
@@ -1084,6 +1196,12 @@ let usdtwd = parseFloat(localStorage.getItem('usdtwd') || '32');
 let pieChart = null;
 
 document.getElementById('usdRate').value = usdtwd;
+const _savedAtUrl = localStorage.getItem('at_url');
+const _savedAtToken = localStorage.getItem('at_token');
+if (_savedAtUrl) document.getElementById('atUrl').value = _savedAtUrl;
+if (_savedAtToken) document.getElementById('atToken').value = _savedAtToken;
+const _savedGsUrl = localStorage.getItem('gs_url');
+if (_savedGsUrl) document.getElementById('gsUrl').value = _savedGsUrl;
 updateDate();
 renderAll();
 fetchAllPrices();
@@ -1105,23 +1223,16 @@ async function fetchAllPrices() {
   btn.textContent = 'SYNCING...';
   btn.classList.add('loading');
   btn.disabled = true;
-  await Promise.all(holdings.map(h => fetchOne(h.code)));
-  btn.textContent = 'SYNC';
+  try {
+    const syms = [...new Set(holdings.map(h => h.code))];
+    const res = await fetch('/api/prices?symbols=' + syms.join(','));
+    const data = await res.json();
+    if (data && !data.error) Object.assign(prices, data);
+  } catch(e) {}
+  btn.textContent = '同步';
   btn.classList.remove('loading');
   btn.disabled = false;
   renderAll();
-}
-
-async function fetchOne(sym) {
-  try {
-    const yahooSym = /^\d{4,}/.test(sym) ? sym + '.TW' : sym;
-    const url = 'https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(yahooSym) + '?interval=1d&range=1d';
-    const proxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-    const res = await fetch(proxy);
-    const data = await res.json();
-    const meta = data?.chart?.result?.[0]?.meta;
-    if (meta) prices[sym] = { price: meta.regularMarketPrice, prev: meta.previousClose };
-  } catch(e) {}
 }
 
 function enrich() {
@@ -1237,7 +1348,7 @@ function renderHoldings(e) {
     const pnlPct = h.profitPct != null ? (h.profitPct >= 0 ? '+' : '') + h.profitPct.toFixed(2) + '%' : '——';
     const pnlColor = h.profitPct == null ? 'var(--text2)' : h.profitPct >= 0 ? 'var(--green)' : 'var(--red)';
     return `
-      <div class="holding-row">
+      <div class="holding-row" data-code="${h.code}" data-name="${h.name}" data-market="${h.market}" onmouseenter="klShow(this)" onmouseleave="klStartHide()">
         <div class="stock-icon">${MARKET_ICON[h.market] || '📊'}</div>
         <div class="holding-info">
           <div style="display:flex;justify-content:space-between;align-items:flex-start">
@@ -1332,6 +1443,7 @@ function switchTab(tab, el) {
     renderAnalysisAlloc();
     renderAnalysisPerf();
   }
+  if (tab === 'manage') pingBackend();
 }
 
 function updateFormHint() {
@@ -1524,6 +1636,36 @@ function fmt(n, decimals) {
 }
 
 // ── Phase 3：自動下單 ─────────────────────────────────────────────────────
+async function pingBackend() {
+  const statusEl = document.getElementById('atStatus');
+  const url = document.getElementById('atUrl').value.trim().replace(/\/$/, '');
+  if (!url) return;
+  statusEl.textContent = '⟳ 喚醒中...';
+  statusEl.style.color = 'var(--orange)';
+  try {
+    const r = await fetch(url + '/health', { signal: AbortSignal.timeout(25000) });
+    const d = await r.json();
+    if (d.status === 'ok') {
+      statusEl.textContent = `● 已連線（${d.mode}）`;
+      statusEl.style.color = 'var(--green)';
+    }
+  } catch(e) {
+    statusEl.textContent = '● 離線';
+    statusEl.style.color = 'var(--red)';
+  }
+}
+
+function saveAtConfig() {
+  const url = document.getElementById('atUrl').value.trim();
+  const token = document.getElementById('atToken').value.trim();
+  if (url) localStorage.setItem('at_url', url);
+  if (token) localStorage.setItem('at_token', token);
+  const btn = document.querySelector('[onclick="saveAtConfig()"]');
+  const orig = btn.textContent;
+  btn.textContent = '✓ 已儲存';
+  setTimeout(() => { btn.textContent = orig; }, 1500);
+}
+
 function atHeaders() {
   return {
     'Content-Type': 'application/json',
@@ -1601,6 +1743,65 @@ async function confirmOrder() {
   }
 }
 
+// ── Google Sheets 備份 ────────────────────────────────────────────────────
+function saveGsUrl(btn) {
+  const url = document.getElementById('gsUrl').value.trim();
+  if (url) localStorage.setItem('gs_url', url);
+  const orig = btn.textContent;
+  btn.textContent = '✓ 已儲存';
+  setTimeout(() => { btn.textContent = orig; }, 1500);
+}
+
+async function backupToSheets() {
+  const url = document.getElementById('gsUrl').value.trim();
+  const statusEl = document.getElementById('gsStatus');
+  if (!url) { statusEl.style.color = 'var(--red)'; statusEl.textContent = '請先填入 Apps Script 網址'; return; }
+  if (!holdings.length) { statusEl.style.color = 'var(--red)'; statusEl.textContent = '持倉清單是空的'; return; }
+  statusEl.style.color = 'var(--text2)';
+  statusEl.textContent = '備份中...';
+  try {
+    const r = await fetch('/api/sheets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, action: 'backup', holdings, sheetName: 'holdings' })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || r.statusText);
+    statusEl.style.color = 'var(--green)';
+    statusEl.textContent = `✓ 備份完成，已寫入 ${d.saved} 筆持倉`;
+  } catch(e) {
+    statusEl.style.color = 'var(--red)';
+    statusEl.textContent = '✗ 備份失敗：' + e.message;
+  }
+}
+
+async function restoreFromSheets() {
+  const url = document.getElementById('gsUrl').value.trim();
+  const statusEl = document.getElementById('gsStatus');
+  if (!url) { statusEl.style.color = 'var(--red)'; statusEl.textContent = '請先填入 Apps Script 網址'; return; }
+  if (!confirm('從 Google Sheets 還原將覆蓋目前全部持倉，確定嗎？')) return;
+  statusEl.style.color = 'var(--text2)';
+  statusEl.textContent = '還原中...';
+  try {
+    const r = await fetch('/api/sheets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, action: 'restore', sheetName: 'holdings' })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || r.statusText);
+    if (!d.holdings || !d.holdings.length) throw new Error('Sheets 內無持倉資料');
+    holdings = d.holdings;
+    localStorage.setItem('portfolio_v5', JSON.stringify(holdings));
+    renderAll();
+    statusEl.style.color = 'var(--green)';
+    statusEl.textContent = `✓ 已還原 ${holdings.length} 筆持倉`;
+  } catch(e) {
+    statusEl.style.color = 'var(--red)';
+    statusEl.textContent = '✗ 還原失敗：' + e.message;
+  }
+}
+
 // ── Analysis Tab ──────────────────────────────────────────────────────────
 function renderAnalysisAlloc() {
   const e = enrich();
@@ -1651,9 +1852,9 @@ function renderAnalysisAlloc() {
   legend.innerHTML = labels.map((l, i) => {
     const pct = total ? ((values[i] / total) * 100).toFixed(1) : 0;
     return `<div class="pie-legend-item">
-      <div class="pie-legend-dot" style="background:${colors[i % colors.length]}"></div>
-      <div class="pie-legend-label">${l}</div>
-      <div class="pie-legend-val">${pct}%</div>
+      <div class="pie-dot" style="background:${colors[i % colors.length]};box-shadow:0 0 6px ${colors[i % colors.length]}"></div>
+      <div class="pie-name">${l}</div>
+      <div class="pie-pct">${pct}%</div>
     </div>`;
   }).join('');
 }
@@ -1863,6 +2064,148 @@ function renderBacktestResults({ equity, trades, metrics }, capital) {
           </tr>`).join('')}
       </tbody>
     </table>`;
+}
+
+// ── K-Line Popup ──────────────────────────────────────────────────────────
+const _klCache = {};
+let _klChart = null, _klHideTimer = null, _klShowTimer = null, _klCode = null, _klW = 360;
+
+function klShow(el) {
+  clearTimeout(_klShowTimer);
+  clearTimeout(_klHideTimer);
+  const { code, name, market } = el.dataset;
+  if (_klCode === code) {
+    _klPos(el);
+    document.getElementById('klinePopup').style.display = 'block';
+    return;
+  }
+  _klShowTimer = setTimeout(() => _klOpen(el, code, name, market), 220);
+}
+
+function klStartHide() {
+  clearTimeout(_klShowTimer);
+  _klHideTimer = setTimeout(() => {
+    document.getElementById('klinePopup').style.display = 'none';
+    _klCode = null;
+  }, 350);
+}
+
+function klCancelHide() { clearTimeout(_klHideTimer); }
+
+function _klPos(el) {
+  const popup = document.getElementById('klinePopup');
+  const rect = el.getBoundingClientRect();
+  _klW = Math.min(360, window.innerWidth - 20);
+  popup.style.width = _klW + 'px';
+  let top = rect.bottom + 8;
+  let left = rect.left + (rect.width - _klW) / 2;
+  left = Math.max(10, Math.min(left, window.innerWidth - _klW - 10));
+  if (top + 340 > window.innerHeight) {
+    const above = rect.top - 348;
+    if (above >= 10) top = above;
+  }
+  popup.style.top = top + 'px';
+  popup.style.left = left + 'px';
+}
+
+async function _klOpen(el, code, name, market) {
+  _klCode = code;
+  const popup = document.getElementById('klinePopup');
+  document.getElementById('klName').textContent = name;
+  document.getElementById('klCode').textContent = code + ' // 3M 日線';
+  document.getElementById('klStatus').textContent = '// 取得資料...';
+  document.getElementById('klChart').innerHTML = '';
+  document.getElementById('klPrice').textContent = '——';
+  document.getElementById('klChg').textContent = '';
+  _klPos(el);
+  popup.style.display = 'block';
+
+  const data = await _klFetch(code, market);
+  if (!data) { document.getElementById('klStatus').textContent = '// 無資料（確認代號是否正確）'; return; }
+
+  const { candles } = data;
+  const last = candles[candles.length - 1];
+  const prev = candles[candles.length - 2];
+  const chg = prev ? (last.close - prev.close) / prev.close * 100 : 0;
+  const isUp = chg >= 0;
+  document.getElementById('klPrice').textContent = last.close.toFixed(market === '美股' ? 2 : 1);
+  const chgEl = document.getElementById('klChg');
+  chgEl.textContent = (isUp ? '▲ +' : '▼ ') + Math.abs(chg).toFixed(2) + '%';
+  chgEl.style.color = isUp ? 'var(--green)' : 'var(--red)';
+  document.getElementById('klStatus').textContent = '';
+  _klRender(candles, _klW);
+}
+
+async function _klFetch(code, market) {
+  if (_klCache[code]) return _klCache[code];
+  const isTW = market === '台股' || market === 'ETF';
+  const syms = isTW ? [code + '.TW', code + '.TWO'] : [code];
+  for (const sym of syms) {
+    try {
+      const yUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1d&range=3mo`;
+      const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(yUrl)}`;
+      const res = await fetch(proxy);
+      const json = await res.json();
+      const r = json?.chart?.result?.[0];
+      if (!r) continue;
+      const ts = r.timestamp ?? [], q = r.indicators?.quote?.[0] ?? {};
+      const candles = ts.map((t, i) => ({
+        time: new Date(t * 1000).toISOString().slice(0, 10),
+        open: q.open?.[i], high: q.high?.[i], low: q.low?.[i], close: q.close?.[i]
+      })).filter(d => d.open != null && d.close != null && d.high != null && d.low != null);
+      if (candles.length < 10) continue;
+      _klCache[code] = { candles };
+      return _klCache[code];
+    } catch(e) {}
+  }
+  return null;
+}
+
+function _klRender(candles, w) {
+  const container = document.getElementById('klChart');
+  container.innerHTML = '';
+  if (_klChart) { try { _klChart.remove(); } catch(e) {} _klChart = null; }
+  if (typeof LightweightCharts === 'undefined') {
+    container.style.cssText = 'display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--text3)';
+    container.textContent = '// 圖表庫未載入';
+    return;
+  }
+  const closes = candles.map(c => c.close);
+  const chart = LightweightCharts.createChart(container, {
+    width: w || 340, height: 200,
+    layout: { background: { type: 'solid', color: '#020c1c' }, textColor: '#7ab8d4' },
+    grid: { vertLines: { color: 'rgba(0,180,255,0.06)' }, horzLines: { color: 'rgba(0,180,255,0.06)' } },
+    timeScale: { borderColor: 'rgba(0,180,255,0.15)', timeVisible: true, fixLeftEdge: true, fixRightEdge: true },
+    rightPriceScale: { borderColor: 'rgba(0,180,255,0.15)' },
+    crosshair: { mode: 1 },
+    handleScroll: false, handleScale: false,
+  });
+  _klChart = chart;
+
+  const cs = chart.addCandlestickSeries({
+    upColor: '#00ff88', downColor: '#ff2d55',
+    borderUpColor: '#00ff88', borderDownColor: '#ff2d55',
+    wickUpColor: 'rgba(0,255,136,0.5)', wickDownColor: 'rgba(255,45,85,0.5)',
+  });
+  cs.setData(candles);
+
+  const ma5D  = candles.map((c,i) => i < 4  ? null : { time:c.time, value:closes.slice(i-4,i+1).reduce((a,b)=>a+b)/5 }).filter(Boolean);
+  const ma20D = candles.map((c,i) => i < 19 ? null : { time:c.time, value:closes.slice(i-19,i+1).reduce((a,b)=>a+b)/20 }).filter(Boolean);
+  chart.addLineSeries({ color:'#00d4ff', lineWidth:1,   priceLineVisible:false, lastValueVisible:false }).setData(ma5D);
+  chart.addLineSeries({ color:'#ff9500', lineWidth:1.5, priceLineVisible:false, lastValueVisible:false }).setData(ma20D);
+
+  const m5  = candles.map((_,i) => i < 4  ? null : closes.slice(i-4,i+1).reduce((a,b)=>a+b)/5);
+  const m20 = candles.map((_,i) => i < 19 ? null : closes.slice(i-19,i+1).reduce((a,b)=>a+b)/20);
+  const mkrs = [];
+  for (let i = 1; i < candles.length; i++) {
+    if (!m5[i] || !m20[i] || !m5[i-1] || !m20[i-1]) continue;
+    if (m5[i-1] < m20[i-1] && m5[i] >= m20[i])
+      mkrs.push({ time:candles[i].time, position:'belowBar', color:'#00ff88', shape:'arrowUp',   text:'金叉' });
+    else if (m5[i-1] > m20[i-1] && m5[i] <= m20[i])
+      mkrs.push({ time:candles[i].time, position:'aboveBar', color:'#ff2d55', shape:'arrowDown', text:'死叉' });
+  }
+  if (mkrs.length) cs.setMarkers(mkrs);
+  chart.timeScale().fitContent();
 }
 </script>
 </body>

@@ -9,25 +9,41 @@ export default async function handler(req, res) {
   if (!code || !strategy) return res.status(400).json({ error: 'MISSING PARAMS' });
 
   // ── 1. Fetch historical data ──
-  const sym = (market === '台股' || market === 'ETF') ? code + '.TW' : code;
-  let result;
-  try {
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1d&range=${range}`;
-    const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-    const d = await r.json();
-    result = d?.chart?.result?.[0];
-  } catch (e) {
-    return res.status(500).json({ error: 'FAILED TO FETCH PRICE DATA' });
+  const isTW = market === '台股' || market === 'ETF';
+  // 上市用 .TW，上櫃用 .TWO；美股直接用代號
+  const symCandidates = isTW ? [code + '.TW', code + '.TWO'] : [code];
+  // 若指定 range 資料不足，自動 fallback 到更長週期
+  const rangeFallbacks = range === '2y' || range === '5y' ? [range] : [range, '2y'];
+
+  async function fetchYahoo(sym, r) {
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1d&range=${r}`;
+    const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+    const d = await res.json();
+    return d?.chart?.result?.[0] ?? null;
   }
-  if (!result) return res.status(400).json({ error: `NO DATA FOR ${code}` });
 
-  const timestamps = result.timestamp ?? [];
-  const rawCloses = result.indicators?.quote?.[0]?.close ?? [];
-  const candles = timestamps
-    .map((ts, i) => ({ date: new Date(ts * 1000).toISOString().slice(0, 10), close: rawCloses[i] }))
-    .filter(d => d.close != null);
+  function toCandles(result) {
+    const ts = result.timestamp ?? [];
+    const closes = result.indicators?.quote?.[0]?.close ?? [];
+    return ts
+      .map((t, i) => ({ date: new Date(t * 1000).toISOString().slice(0, 10), close: closes[i] }))
+      .filter(d => d.close != null);
+  }
 
-  if (candles.length < 60) return res.status(400).json({ error: 'INSUFFICIENT DATA (need ≥60 trading days)' });
+  let candles = [];
+  let fetched = false;
+  outer: for (const sym of symCandidates) {
+    for (const r of rangeFallbacks) {
+      try {
+        const result = await fetchYahoo(sym, r);
+        if (!result) continue;
+        const c = toCandles(result);
+        if (c.length >= 60) { candles = c; fetched = true; break outer; }
+      } catch(e) { /* try next */ }
+    }
+  }
+
+  if (!fetched) return res.status(400).json({ error: `NO DATA FOR ${code}（已嘗試 .TW / .TWO，資料不足 60 天）` });
 
   const priceArr = candles.map(d => d.close);
 

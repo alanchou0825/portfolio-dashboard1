@@ -1,11 +1,14 @@
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(200).end();
   res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate');
 
-  const { symbols } = req.query;
-  if (!symbols) return res.status(400).json({ error: 'symbols required' });
+  const raw = req.query.symbols || req.query.codes;
+  if (!raw) return res.status(400).json({ error: 'symbols required' });
 
-  const symbolList = symbols.split(',').map(s => s.trim()).filter(Boolean);
+  const symbolList = raw.split(',').map(s => s.trim()).filter(Boolean);
   const results = {};
 
   await Promise.all(symbolList.map(async (sym) => {

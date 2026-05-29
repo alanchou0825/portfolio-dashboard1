@@ -97,6 +97,16 @@ ALLOWED_ORIGINS=https://portfolio-dashboard1-iota.vercel.app
 - **原因**：每次重構 localStorage key 更名
 - **目前 key**：`portfolio_v5`
 
+### ERR-006：Vercel 部署 BLOCKED（GitHub remote 存在但未 push）
+- **現象**：`vercel --prod` 上傳成功但部署狀態顯示 BLOCKED，CLI 卡在 "Building..."
+- **原因**：本地 git repo 有 GitHub remote，Vercel CLI 自動加入 `githubDeployment: "1"` metadata，Vercel 嘗試驗證 commit 是否存在於 GitHub。若 branch 未 push，驗證失敗 → BLOCKED
+- **解決方式**：部署前暫時移除 remote，部署後再加回
+  ```bash
+  git remote remove origin
+  vercel --prod
+  git remote add origin https://github.com/alanchou0825/portfolio-dashboard1.git
+  ```
+
 ## 開發規範
 1. 新功能不動既有 JS function 命名（`renderAll`、`enrich`、`switchTab` 等）
 2. 新 Chart 統一命名：`window._<功能>Chart`，切換 tab 前先 destroy
