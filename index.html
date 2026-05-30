@@ -1845,15 +1845,15 @@ function renderLearnCharts() {
   _learnCharts.push(new Chart(gcEl, {
     type: 'line',
     data: { labels, datasets: [
-      { label: '股價', data: gcPrice, borderColor: priceColor, borderWidth: 2,
-        pointRadius: labels.map((_,i) => i===gcCrossIdx ? 14 : 0),
-        pointStyle: labels.map((_,i) => i===gcCrossIdx ? 'triangle' : 'circle'),
+      { label: '股價', data: gcPrice, borderColor: priceColor, borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
+      { label: 'MA5',  data: gcMA5,  borderColor: '#00d4ff', borderWidth: 2.5,
+        pointRadius:          labels.map((_,i) => i===gcCrossIdx ? 14 : 0),
+        pointStyle:           labels.map((_,i) => i===gcCrossIdx ? 'triangle' : 'circle'),
         pointBackgroundColor: labels.map((_,i) => i===gcCrossIdx ? '#00ff88' : 'transparent'),
-        pointBorderColor: labels.map((_,i) => i===gcCrossIdx ? '#ffffff' : 'transparent'),
-        pointBorderWidth: 2, tension: 0.3 },
-      { label: 'MA5',  data: gcMA5,  borderColor: '#00d4ff', borderWidth: 2, pointRadius: 0, tension: 0.4,
+        pointBorderColor:     labels.map((_,i) => i===gcCrossIdx ? '#ffffff' : 'transparent'),
+        pointBorderWidth: 2, tension: 0.4,
         fill: { target: 2, above: gcGrad, below: 'transparent' } },
-      { label: 'MA20', data: gcMA20, borderColor: '#ff9500', borderWidth: 2, pointRadius: 0, tension: 0.4 },
+      { label: 'MA20', data: gcMA20, borderColor: '#ff9500', borderWidth: 2.5, pointRadius: 0, tension: 0.4 },
       { label: '黃金交叉點', data: [null], backgroundColor: '#00ff88', pointStyle: 'triangle', pointRadius: [14], type: 'scatter' }
     ]},
     options: { ...baseOpts, plugins: { ...baseOpts.plugins,
@@ -1861,7 +1861,7 @@ function renderLearnCharts() {
       tooltip: { ...baseOpts.plugins.tooltip, callbacks: {
         title: ctx => `${ctx[0].label}`,
         label: ctx => {
-          if (ctx.datasetIndex === 0 && ctx.dataIndex === gcCrossIdx) return ` ▲ 黃金交叉！股價 ${ctx.raw}`;
+          if (ctx.datasetIndex === 1 && ctx.dataIndex === gcCrossIdx) return ` ▲ 黃金交叉！MA5≈MA20`;
           const names = ['股價','MA5','MA20'];
           return names[ctx.datasetIndex] != null ? ` ${names[ctx.datasetIndex]}: ${typeof ctx.raw === 'number' ? ctx.raw.toFixed(1) : ctx.raw}` : null;
         }
@@ -1880,15 +1880,16 @@ function renderLearnCharts() {
   _learnCharts.push(new Chart(dcEl, {
     type: 'line',
     data: { labels, datasets: [
-      { label: '股價', data: dcPrice, borderColor: priceColor, borderWidth: 2,
-        pointRadius: labels.map((_,i) => i===dcCrossIdx ? 14 : 0),
-        pointStyle: labels.map((_,i) => i===dcCrossIdx ? 'triangle' : 'circle'),
+      { label: '股價', data: dcPrice, borderColor: priceColor, borderWidth: 1.5, pointRadius: 0, tension: 0.3 },
+      { label: 'MA5',  data: dcMA5,  borderColor: '#00d4ff', borderWidth: 2.5,
+        pointRadius:          labels.map((_,i) => i===dcCrossIdx ? 14 : 0),
+        pointStyle:           labels.map((_,i) => i===dcCrossIdx ? 'triangle' : 'circle'),
+        pointRotation:        labels.map((_,i) => i===dcCrossIdx ? 180 : 0),
         pointBackgroundColor: labels.map((_,i) => i===dcCrossIdx ? '#ff2d55' : 'transparent'),
-        pointBorderColor: labels.map((_,i) => i===dcCrossIdx ? '#ffffff' : 'transparent'),
-        pointBorderWidth: 2, tension: 0.3 },
-      { label: 'MA5',  data: dcMA5,  borderColor: '#00d4ff', borderWidth: 2, pointRadius: 0, tension: 0.4,
+        pointBorderColor:     labels.map((_,i) => i===dcCrossIdx ? '#ffffff' : 'transparent'),
+        pointBorderWidth: 2, tension: 0.4,
         fill: { target: 2, above: 'transparent', below: dcGrad } },
-      { label: 'MA20', data: dcMA20, borderColor: '#ff9500', borderWidth: 2, pointRadius: 0, tension: 0.4 },
+      { label: 'MA20', data: dcMA20, borderColor: '#ff9500', borderWidth: 2.5, pointRadius: 0, tension: 0.4 },
       { label: '死亡交叉點', data: [null], backgroundColor: '#ff2d55', pointStyle: 'triangle', pointRadius: [14], type: 'scatter' }
     ]},
     options: { ...baseOpts, plugins: { ...baseOpts.plugins,
@@ -1896,7 +1897,7 @@ function renderLearnCharts() {
       tooltip: { ...baseOpts.plugins.tooltip, callbacks: {
         title: ctx => `${ctx[0].label}`,
         label: ctx => {
-          if (ctx.datasetIndex === 0 && ctx.dataIndex === dcCrossIdx) return ` ▼ 死亡交叉！股價 ${ctx.raw}`;
+          if (ctx.datasetIndex === 1 && ctx.dataIndex === dcCrossIdx) return ` ▼ 死亡交叉！MA5≈MA20`;
           const names = ['股價','MA5','MA20'];
           return names[ctx.datasetIndex] != null ? ` ${names[ctx.datasetIndex]}: ${typeof ctx.raw === 'number' ? ctx.raw.toFixed(1) : ctx.raw}` : null;
         }
