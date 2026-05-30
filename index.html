@@ -1762,7 +1762,8 @@ function renderLearnCharts() {
   const gcPrice = [95,93,91,90,88,87,89,91,90,88,87,86,85,84,83,85,88,92,96,100,104,107,109,111,112,114,116,117,119,120,121,122,123,124,125,126,127,128,129,130];
   const gcMA5  = gcPrice.map((_, i) => i<4?null: gcPrice.slice(i-4,i+1).reduce((a,b)=>a+b)/5);
   const gcMA20 = gcPrice.map((_, i) => i<19?null:gcPrice.slice(i-19,i+1).reduce((a,b)=>a+b)/20);
-  const gcCrossIdx = labels.findIndex((_, i) => gcMA5[i]!==null && gcMA20[i]!==null && i>0 && gcMA5[i-1]<gcMA20[i-1] && gcMA5[i]>=gcMA20[i]);
+  let gcCrossIdx = labels.findIndex((_, i) => gcMA5[i]!==null && gcMA20[i]!==null && i>0 && gcMA5[i-1]<gcMA20[i-1] && gcMA5[i]>=gcMA20[i]);
+  if (gcCrossIdx === -1) gcCrossIdx = labels.findIndex((_, i) => gcMA5[i]!==null && gcMA20[i]!==null && gcMA5[i] > gcMA20[i]);
   const gcEl = document.getElementById('learnGoldenChart');
   const gcGrad = mkGrad(gcEl, 200, 'rgba(0,255,136,0.15)', 'rgba(0,255,136,0)');
   _learnCharts.push(new Chart(gcEl, {
