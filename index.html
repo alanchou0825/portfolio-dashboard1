@@ -1834,13 +1834,14 @@ function renderLearnCharts() {
   const labels = Array.from({ length: 40 }, (_, i) => `D${i+1}`);
 
   // — 黃金交叉 —
-  const gcPrice = [95,93,91,90,88,87,89,91,90,88,87,86,85,84,83,85,88,92,96,100,104,107,109,111,112,114,116,117,119,120,121,122,123,124,125,126,127,128,129,130];
+  // 前20天下跌建立MA20（MA5遠低於MA20），第21天起強力反彈使MA5快速穿越MA20
+  const gcPrice = [120,118,116,114,112,110,108,106,104,102,100,98,96,94,92,90,88,86,84,82,84,87,91,96,102,108,114,119,123,126,128,130,131,132,133,134,135,136,137,138];
   const gcMA5  = gcPrice.map((_, i) => i<4?null: gcPrice.slice(i-4,i+1).reduce((a,b)=>a+b)/5);
   const gcMA20 = gcPrice.map((_, i) => i<19?null:gcPrice.slice(i-19,i+1).reduce((a,b)=>a+b)/20);
   let gcCrossIdx = labels.findIndex((_, i) => gcMA5[i]!==null && gcMA20[i]!==null && i>0 && gcMA5[i-1]<gcMA20[i-1] && gcMA5[i]>=gcMA20[i]);
   if (gcCrossIdx === -1) gcCrossIdx = labels.findIndex((_, i) => gcMA5[i]!==null && gcMA20[i]!==null && gcMA5[i] > gcMA20[i]);
   const gcEl = document.getElementById('learnGoldenChart');
-  const gcGrad = mkGrad(gcEl, 200, 'rgba(0,255,136,0.15)', 'rgba(0,255,136,0)');
+  const gcGrad = mkGrad(gcEl, 200, 'rgba(0,255,136,0.3)', 'rgba(0,255,136,0.05)');
   _learnCharts.push(new Chart(gcEl, {
     type: 'line',
     data: { labels, datasets: [
@@ -1869,12 +1870,13 @@ function renderLearnCharts() {
   }));
 
   // — 死亡交叉 —
-  const dcPrice = [130,132,131,133,134,132,130,128,126,124,122,120,119,118,116,114,112,110,108,106,104,103,102,101,100,99,98,97,96,95,95,94,94,93,93,92,92,91,91,90];
+  // 前20天上漲建立MA20（MA5遠高於MA20），第21天起急跌使MA5快速跌破MA20
+  const dcPrice = [80,82,84,86,88,90,92,94,96,98,100,102,104,106,108,110,112,114,116,118,118,115,112,108,104,99,94,89,85,82,80,78,76,75,74,73,72,71,70,69];
   const dcMA5  = dcPrice.map((_, i) => i<4?null: dcPrice.slice(i-4,i+1).reduce((a,b)=>a+b)/5);
   const dcMA20 = dcPrice.map((_, i) => i<19?null:dcPrice.slice(i-19,i+1).reduce((a,b)=>a+b)/20);
   const dcCrossIdx = labels.findIndex((_, i) => dcMA5[i]!==null && dcMA20[i]!==null && i>0 && dcMA5[i-1]>dcMA20[i-1] && dcMA5[i]<=dcMA20[i]);
   const dcEl = document.getElementById('learnDeathChart');
-  const dcGrad = mkGrad(dcEl, 200, 'rgba(255,45,85,0.15)', 'rgba(255,45,85,0)');
+  const dcGrad = mkGrad(dcEl, 200, 'rgba(255,45,85,0.3)', 'rgba(255,45,85,0.05)');
   _learnCharts.push(new Chart(dcEl, {
     type: 'line',
     data: { labels, datasets: [
