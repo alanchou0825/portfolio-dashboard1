@@ -798,6 +798,18 @@ body.light .learn-info-box.learn-insight { background: rgba(0,153,92,0.06); bord
 }
 .theme-btn:hover { background: var(--cyan-dim); color: var(--cyan); border-color: var(--cyan); }
 
+/* ── Dashboard desktop 2-col ── */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 16px 20px 0;
+}
+.dash-grid .card { margin: 0; }
+@media (max-width: 800px) {
+  .dash-grid { grid-template-columns: 1fr; }
+}
+
 /* ── Learn 2-col layout ── */
 .learn-2col {
   display: grid;
@@ -902,7 +914,9 @@ body.light .learn-info-box.learn-insight { background: rgba(0,153,92,0.06); bord
   <!-- ── DASHBOARD ── -->
   <div class="panel active" id="panel-dashboard">
 
-    <div class="section">
+  <div class="dash-grid">
+    <!-- Left: hero + stats -->
+    <div>
       <div class="hero-card">
         <div class="circuit-lines">&#x2518;&#x250C;&#x2514;&#x2510;</div>
         <div class="hero-eyebrow" id="heroDate">SYS.CLOCK // LOADING...</div>
@@ -946,10 +960,9 @@ body.light .learn-info-box.learn-insight { background: rgba(0,153,92,0.06); bord
           <span style="font-family:var(--mono);font-size:10px;color:var(--text3)">// 由 Gemini 驅動</span>
         </div>
       </div>
-    </div>
 
-    <div class="section">
-      <div class="mini-grid">
+      <!-- Mini stats below hero -->
+      <div class="mini-grid" style="margin-top:16px">
         <div class="card mini-card">
           <div class="mini-label">獲利持倉</div>
           <div class="mini-value" id="profitCount" style="color:var(--green);text-shadow:0 0 20px rgba(0,255,136,0.5)">—</div>
@@ -963,10 +976,12 @@ body.light .learn-info-box.learn-insight { background: rgba(0,153,92,0.06); bord
       </div>
     </div>
 
-    <div class="section">
-      <div class="card chart-card">
+    <!-- Right: pie chart -->
+    <div>
+      <div class="card chart-card" style="height:100%;box-sizing:border-box">
         <div class="chart-header">
           <div class="chart-title">資產配置</div>
+          <div class="chart-sub" style="font-family:var(--mono);font-size:10px;color:var(--text3)">// 點擊分類篩選持股</div>
         </div>
         <div class="pie-section">
           <div class="pie-wrap"><canvas id="pieChart"></canvas></div>
@@ -974,6 +989,7 @@ body.light .learn-info-box.learn-insight { background: rgba(0,153,92,0.06); bord
         </div>
       </div>
     </div>
+  </div>
 
   </div>
 
@@ -1023,7 +1039,13 @@ body.light .learn-info-box.learn-insight { background: rgba(0,153,92,0.06); bord
 
     <div class="section">
       <div class="card">
-        <div class="manage-list-header">持倉清單</div>
+        <div class="manage-list-header" style="display:flex;align-items:center;justify-content:space-between">
+          <span>持倉清單</span>
+          <div style="display:flex;gap:8px">
+            <button onclick="exportCSV()" style="font-family:var(--mono);font-size:10px;padding:4px 10px;background:transparent;border:1px solid var(--border2);color:var(--text2);cursor:pointer;border-radius:3px" title="匯出 CSV">↓ CSV</button>
+            <label style="font-family:var(--mono);font-size:10px;padding:4px 10px;background:transparent;border:1px solid var(--border2);color:var(--text2);cursor:pointer;border-radius:3px" title="匯入 CSV">↑ CSV<input type="file" accept=".csv" style="display:none" onchange="importCSV(this)"></label>
+          </div>
+        </div>
         <div id="manageList"></div>
       </div>
     </div>
@@ -1044,15 +1066,16 @@ body.light .learn-info-box.learn-insight { background: rgba(0,153,92,0.06); bord
         <div class="form-section-label" style="display:flex;align-items:center;gap:10px">
           自動下單（永豐金 API）
           <span id="atStatus" style="font-family:var(--mono);font-size:10px;font-weight:normal;letter-spacing:0.05em;color:var(--text3)">● 未連線</span>
+          <span id="atModeBadge" style="display:none;font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:3px;font-weight:600"></span>
         </div>
         <div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:12px;letter-spacing:0.05em">
-          // 需部署 Python 後端至 Railway，並在永豐金開通 API 權限
+          // 後端部署於 Render · 需在永豐金開通 API 權限後切換正式模式
         </div>
 
         <div class="form-grid">
           <div class="form-group full">
             <div class="form-label">後端服務網址</div>
-            <input class="sf-input" id="atUrl" placeholder="https://xxx.railway.app" value="https://portfolio-trader-production.up.railway.app" style="width:100%" />
+            <input class="sf-input" id="atUrl" placeholder="https://xxxx.onrender.com" value="https://portfolio-dashboard1.onrender.com" style="width:100%" />
           </div>
           <div class="form-group full">
             <div class="form-label">API Token</div>
@@ -1245,6 +1268,17 @@ function respond(data) {
           <div class="manage-list-header">交易記錄（最近 20 筆）</div>
           <div id="btTradeLog"></div>
         </div>
+      </div>
+    </div>
+
+    <!-- 回測歷史 -->
+    <div class="section" style="padding-bottom:24px">
+      <div class="card">
+        <div class="manage-list-header" style="display:flex;align-items:center;justify-content:space-between">
+          <span>回測歷史紀錄</span>
+          <button onclick="clearBtHistory()" style="font-family:var(--mono);font-size:10px;padding:3px 8px;background:transparent;border:1px solid var(--border);color:var(--text3);cursor:pointer;border-radius:3px">清除</button>
+        </div>
+        <div id="btHistory" style="font-family:var(--mono);font-size:11px;color:var(--text3);padding:10px 0">// 尚無紀錄</div>
       </div>
     </div>
   </div>
@@ -1636,6 +1670,46 @@ function renderHoldings(e) {
   }).join('');
 }
 
+function exportCSV() {
+  const rows = [['市場','名稱','代號','股數','成本']];
+  holdings.forEach(h => rows.push([h.market, h.name, h.code, h.shares, h.cost]));
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const a = Object.assign(document.createElement('a'), {
+    href: 'data:text/csv;charset=utf-8,﻿' + encodeURIComponent(csv),
+    download: `holdings_${new Date().toISOString().slice(0,10)}.csv`
+  });
+  a.click();
+}
+
+function importCSV(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const lines = e.target.result.split('\n').map(l => l.trim()).filter(Boolean);
+    const header = lines[0].toLowerCase();
+    if (!header.includes('代號') && !header.includes('code')) {
+      alert('CSV 格式不符，需有欄位：市場,名稱,代號,股數,成本');
+      return;
+    }
+    let added = 0;
+    for (let i = 1; i < lines.length; i++) {
+      const parts = lines[i].split(',').map(s => s.trim().replace(/^"|"$/g,''));
+      if (parts.length < 5) continue;
+      const [market, name, code, shares, cost] = parts;
+      if (!code || isNaN(+shares) || isNaN(+cost)) continue;
+      if (!holdings.find(h => h.code === code.toUpperCase())) {
+        holdings.push({ market: market||'台股', name: name||code, code: code.toUpperCase(), shares: +shares, cost: +cost });
+        added++;
+      }
+    }
+    if (added) { save(); renderAll(); alert(`匯入成功：新增 ${added} 筆持倉`); }
+    else alert('沒有新增任何持倉（代號重複或格式錯誤）');
+    input.value = '';
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
 function renderManage() {
   const el = document.getElementById('manageList');
   if (!holdings.length) {
@@ -1694,6 +1768,7 @@ function switchTab(tab, el) {
   }
   if (tab === 'manage') pingBackend();
   if (tab === 'learn') renderLearnCharts();
+  if (tab === 'backtest') renderBtHistory();
 }
 
 // ── Theme Toggle ──
@@ -2165,12 +2240,20 @@ async function pingBackend() {
     const r = await fetch(url + '/health', { signal: AbortSignal.timeout(25000) });
     const d = await r.json();
     if (d.status === 'ok') {
-      statusEl.textContent = `● 已連線（${d.mode}）`;
+      statusEl.textContent = '● 已連線';
       statusEl.style.color = 'var(--green)';
+      const badge = document.getElementById('atModeBadge');
+      const isSim = d.mode === '模擬';
+      badge.textContent = isSim ? '模擬模式' : '正式模式';
+      badge.style.background = isSim ? 'rgba(255,149,0,0.15)' : 'rgba(0,255,136,0.12)';
+      badge.style.color = isSim ? 'var(--orange)' : 'var(--green)';
+      badge.style.border = isSim ? '1px solid rgba(255,149,0,0.4)' : '1px solid rgba(0,255,136,0.3)';
+      badge.style.display = 'inline-block';
     }
   } catch(e) {
     statusEl.textContent = '● 離線';
     statusEl.style.color = 'var(--red)';
+    document.getElementById('atModeBadge').style.display = 'none';
   }
 }
 
@@ -2351,13 +2434,18 @@ function renderAnalysisAlloc() {
     },
     options: {
       cutout: '65%',
+      onClick: (evt, elements) => {
+        if (!elements.length) return;
+        const market = labels[elements[0].index];
+        filterHoldingsByMarket(market);
+      },
       plugins: {
         legend: { display: false },
         tooltip: {
           callbacks: {
             label: ctx => {
               const pct = total ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
-              return ` ${ctx.label}: NT$${Math.round(ctx.parsed).toLocaleString()} (${pct}%)`;
+              return ` ${ctx.label}: NT$${Math.round(ctx.parsed).toLocaleString()} (${pct}%) — 點擊篩選`;
             }
           },
           bodyFont: { family: "'Share Tech Mono'" }
@@ -2370,12 +2458,41 @@ function renderAnalysisAlloc() {
   const colors = ['#00d4ff','#0066ff','#00ff88','#bf5af2','#ff9500'];
   legend.innerHTML = labels.map((l, i) => {
     const pct = total ? ((values[i] / total) * 100).toFixed(1) : 0;
-    return `<div class="pie-legend-item">
+    return `<div class="pie-legend-item" style="cursor:pointer" onclick="filterHoldingsByMarket('${l}')">
       <div class="pie-dot" style="background:${colors[i % colors.length]};box-shadow:0 0 6px ${colors[i % colors.length]}"></div>
       <div class="pie-name">${l}</div>
       <div class="pie-pct">${pct}%</div>
     </div>`;
   }).join('');
+}
+
+function filterHoldingsByMarket(market) {
+  // Switch to holdings tab
+  const tabEls = document.querySelectorAll('.tab-item');
+  const holdingsTab = [...tabEls].find(t => t.textContent.trim() === '持股');
+  if (holdingsTab) switchTab('holdings', holdingsTab);
+  // Highlight matching rows after render
+  setTimeout(() => {
+    document.querySelectorAll('.holding-row').forEach(row => {
+      const m = row.dataset.market;
+      row.style.opacity = (!market || m === market) ? '1' : '0.3';
+      row.style.transition = 'opacity 0.3s';
+    });
+    // Show filter indicator
+    const existing = document.getElementById('marketFilterBadge');
+    if (existing) existing.remove();
+    const badge = document.createElement('div');
+    badge.id = 'marketFilterBadge';
+    badge.style.cssText = 'position:sticky;top:54px;z-index:50;text-align:center;padding:6px;background:rgba(0,212,255,0.1);border-bottom:1px solid var(--border2);font-family:var(--mono);font-size:11px;color:var(--cyan)';
+    badge.innerHTML = `篩選：${market} &nbsp;<span style="cursor:pointer;color:var(--text3)" onclick="clearHoldingsFilter()">✕ 清除</span>`;
+    document.getElementById('panel-holdings').prepend(badge);
+  }, 100);
+}
+
+function clearHoldingsFilter() {
+  document.querySelectorAll('.holding-row').forEach(row => { row.style.opacity = '1'; });
+  const badge = document.getElementById('marketFilterBadge');
+  if (badge) badge.remove();
 }
 
 async function renderAnalysisPerf() {
@@ -2393,14 +2510,15 @@ async function renderAnalysisPerf() {
       body: JSON.stringify({ holdings: e.map(h => ({ code: h.code, market: h.market, shares: h.shares, cost: h.cost })) })
     });
     if (!res.ok) throw new Error('history API error');
-    const { labels, values, costLine } = await res.json();
-    statusEl.style.display = 'none';
+    const { labels, values, costLine, partial } = await res.json();
 
     if (!labels.length) {
       statusEl.style.display = 'block';
-      statusEl.textContent = '無法取得歷史資料';
+      statusEl.textContent = '⚠ 無法取得歷史資料（Yahoo Finance 暫時限流，請稍後重試）';
       return;
     }
+    statusEl.style.display = partial ? 'block' : 'none';
+    if (partial) statusEl.textContent = '⚠ 部分持倉無歷史資料，曲線為可取得持倉的合計';
 
     const ctx = document.getElementById('analysisPerfChart');
     if (window._analysisPerfChart) window._analysisPerfChart.destroy();
@@ -2477,12 +2595,44 @@ async function runBacktest() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'backtest failed');
     renderBacktestResults(data, capital);
+    saveBtHistory({ code, market, strategy, range, capital, metrics: data.metrics, date: new Date().toLocaleDateString('zh-TW') });
   } catch(err) {
     alert('回測錯誤：' + err.message);
   } finally {
     btn.textContent = '// 執行回測';
     btn.disabled = false;
   }
+}
+
+function saveBtHistory({ code, market, strategy, range, capital, metrics, date }) {
+  const hist = JSON.parse(localStorage.getItem('bt_history') || '[]');
+  hist.unshift({ code, market, strategy, range, capital, metrics, date });
+  localStorage.setItem('bt_history', JSON.stringify(hist.slice(0, 10)));
+  renderBtHistory();
+}
+
+function renderBtHistory() {
+  const hist = JSON.parse(localStorage.getItem('bt_history') || '[]');
+  const el = document.getElementById('btHistory');
+  if (!el) return;
+  if (!hist.length) { el.textContent = '// 尚無紀錄'; return; }
+  const strategyLabel = { ma_cross_5_20:'黃金/死亡(MA5/20)', ma_cross:'黃金/死亡(MA20/60)', rsi_range:'RSI(30/70)', bollinger:'布林通道' };
+  el.innerHTML = hist.map((h, i) => {
+    const ret = parseFloat(h.metrics?.totalReturn ?? '0');
+    const color = ret >= 0 ? 'var(--green)' : 'var(--red)';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);${i===hist.length-1?'border-bottom:none':''}">
+      <span style="color:var(--cyan);min-width:60px">${h.code}</span>
+      <span style="color:var(--text3);min-width:80px">${strategyLabel[h.strategy]||h.strategy}</span>
+      <span style="color:var(--text2)">${h.range} | NT$${(h.capital/1000).toFixed(0)}K</span>
+      <span style="color:${color};margin-left:auto;font-weight:600">${h.metrics?.totalReturn ?? '--'}</span>
+      <span style="color:var(--text3);font-size:10px">${h.date}</span>
+    </div>`;
+  }).join('');
+}
+
+function clearBtHistory() {
+  localStorage.removeItem('bt_history');
+  renderBtHistory();
 }
 
 function renderBacktestResults({ equity, trades, metrics }, capital) {
