@@ -606,6 +606,94 @@ body::after {
   font-weight: 700; flex-shrink: 0;
 }
 
+/* ── 機器人面板 ── */
+.bot-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; border-bottom: 1px solid var(--border);
+}
+.bot-status-badge {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 13px; color: var(--green);
+  text-shadow: 0 0 6px var(--green);
+}
+.bot-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  animation: pulse 2s ease-in-out infinite;
+}
+.bot-refresh {
+  background: transparent; border: 1px solid var(--border2);
+  color: var(--cyan); font-family: var(--mono); font-size: 12px;
+  padding: 5px 14px; cursor: pointer; transition: all 0.2s;
+  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+}
+.bot-refresh:hover { background: var(--cyan-dim); }
+
+.bot-section {
+  border-bottom: 1px solid var(--border); padding: 14px 20px;
+}
+.bot-section-title {
+  font-family: var(--mono); font-size: 11px; color: var(--cyan);
+  letter-spacing: 0.15em; text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+/* 持倉表格 */
+.bot-table { width: 100%; border-collapse: collapse; }
+.bot-table th {
+  font-family: var(--mono); font-size: 10px; color: var(--text3);
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 4px 8px; text-align: left; border-bottom: 1px solid var(--border);
+}
+.bot-table td {
+  font-family: var(--mono); font-size: 12px; color: var(--text2);
+  padding: 7px 8px; border-bottom: 1px solid rgba(0,180,255,0.05);
+}
+.bot-table tr:hover td { background: rgba(0,180,255,0.03); }
+
+/* 下單記錄 */
+.trade-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid rgba(0,180,255,0.05);
+}
+.trade-badge {
+  font-family: var(--mono); font-size: 10px; font-weight: 600;
+  padding: 2px 8px; letter-spacing: 0.08em;
+  clip-path: polygon(4px 0%, 100% 0%, calc(100% - 4px) 100%, 0% 100%);
+}
+.trade-badge.buy { background: rgba(0,255,136,0.15); color: var(--green); }
+.trade-badge.sell { background: rgba(255,45,85,0.15); color: var(--red); }
+.trade-info { flex: 1; }
+.trade-main { font-family: var(--mono); font-size: 13px; color: var(--text); }
+.trade-sub { font-family: var(--mono); font-size: 10px; color: var(--text3); margin-top: 2px; }
+.trade-amount { font-family: var(--mono); font-size: 13px; color: var(--cyan); }
+
+/* AI 分析卡片 */
+.ai-card {
+  background: rgba(0,180,255,0.03); border: 1px solid var(--border);
+  padding: 12px 14px; margin-bottom: 8px;
+}
+.ai-card-time { font-family: var(--mono); font-size: 10px; color: var(--text3); margin-bottom: 6px; }
+.ai-card-text { font-family: var(--mono); font-size: 12px; color: var(--text2); line-height: 1.8; white-space: pre-wrap; }
+
+/* 績效圖 */
+.perf-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 0; font-family: var(--mono); font-size: 12px;
+}
+.perf-date { color: var(--text3); width: 120px; flex-shrink: 0; }
+.perf-bar-wrap { flex: 1; height: 14px; background: rgba(0,180,255,0.06); position: relative; }
+.perf-bar { height: 100%; transition: width 0.5s; }
+.perf-bar.pos { background: linear-gradient(90deg, var(--green), rgba(0,255,136,0.4)); }
+.perf-bar.neg { background: linear-gradient(90deg, var(--red), rgba(255,45,85,0.4)); }
+.perf-val { width: 70px; text-align: right; flex-shrink: 0; }
+
+.bot-empty {
+  font-family: var(--mono); font-size: 12px; color: var(--text3);
+  padding: 20px; text-align: center; letter-spacing: 0.1em;
+}
+
 /* ── K 線 Modal ── */
 .kline-overlay {
   display: none; position: fixed; inset: 0; z-index: 600;
@@ -871,6 +959,7 @@ body::after {
     <div class="tab-item active" onclick="switchTab('dashboard',this)">總覽</div>
     <div class="tab-item" onclick="switchTab('holdings',this)">持股</div>
     <div class="tab-item" onclick="switchTab('manage',this)">管理</div>
+    <div class="tab-item" onclick="switchTab('bot',this)">機器人</div>
   </div>
 
   <!-- ── DASHBOARD ── -->
@@ -1014,6 +1103,43 @@ body::after {
   </div>
 
 </div>
+
+  <!-- ── 機器人面板 ── -->
+  <div class="panel" id="panel-bot">
+    <div class="card" style="margin:16px">
+      <div class="bot-header">
+        <div class="bot-status-badge">
+          <div class="bot-dot"></div>
+          <span id="botStatusText">載入中...</span>
+        </div>
+        <button class="bot-refresh" onclick="loadBotStatus()">重新整理</button>
+      </div>
+
+      <!-- 持倉狀況 -->
+      <div class="bot-section">
+        <div class="bot-section-title">// 持倉狀況</div>
+        <div id="botPositions"><div class="bot-empty">等待數據...</div></div>
+      </div>
+
+      <!-- 下單記錄 -->
+      <div class="bot-section">
+        <div class="bot-section-title">// 最近下單記錄</div>
+        <div id="botTrades"><div class="bot-empty">等待數據...</div></div>
+      </div>
+
+      <!-- 績效摘要 -->
+      <div class="bot-section">
+        <div class="bot-section-title">// 每次執行績效</div>
+        <div id="botSummary"><div class="bot-empty">等待數據...</div></div>
+      </div>
+
+      <!-- AI 分析 -->
+      <div class="bot-section" style="border-bottom:none">
+        <div class="bot-section-title">// 最近 AI 分析</div>
+        <div id="botAnalysis"><div class="bot-empty">等待數據...</div></div>
+      </div>
+    </div>
+  </div>
 
 <!-- ── K 線 Modal ── -->
 <div class="kline-overlay" id="klineOverlay">
@@ -1339,6 +1465,7 @@ function switchTab(tab, el) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('panel-' + tab).classList.add('active');
+  if (tab === 'bot') loadBotStatus();
 }
 
 function updateFormHint() {
@@ -1524,7 +1651,100 @@ document.getElementById('aiModal').addEventListener('click', function(e) {
   if (e.target === this) closeAiModal();
 });
 
-// ── K 線圖 ──────────────────────────────────────────────
+// ── 機器人狀態 ────────────────────────────────────────────
+async function loadBotStatus() {
+  document.getElementById('botStatusText').textContent = '同步中...';
+  try {
+    const res = await fetch('/api/bot-status');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    renderBotStatus(data);
+    const t = new Date(data.updatedAt).toLocaleTimeString('zh-TW');
+    document.getElementById('botStatusText').textContent = '最後同步：' + t;
+  } catch(e) {
+    document.getElementById('botStatusText').textContent = '載入失敗：' + e.message;
+  }
+}
+
+function renderBotStatus(data) {
+  // 持倉狀況
+  const posEl = document.getElementById('botPositions');
+  if (!data.positions?.length) {
+    posEl.innerHTML = '<div class="bot-empty">// 尚無持倉數據，等待機器人執行</div>';
+  } else {
+    posEl.innerHTML = `
+      <table class="bot-table">
+        <tr>
+          <th>代號</th><th>股數</th><th>成本</th><th>現價</th><th>損益%</th><th>狀態</th>
+        </tr>
+        ${data.positions.map(p => {
+          const pct = parseFloat(p['損益%']) || 0;
+          const color = pct >= 0 ? 'var(--green)' : 'var(--red)';
+          return `<tr>
+            <td style="color:var(--cyan)">${p['代號']}</td>
+            <td>${p['持有股數']}</td>
+            <td>${p['成本價']}</td>
+            <td>${p['現價']}</td>
+            <td style="color:${color};font-weight:600">${p['損益%']}</td>
+            <td style="color:${p['狀態']==='停損警示'?'var(--red)':p['狀態']==='獲利了結'?'var(--green)':'var(--text3)'}">${p['狀態']}</td>
+          </tr>`;
+        }).join('')}
+      </table>`;
+  }
+
+  // 下單記錄
+  const tradeEl = document.getElementById('botTrades');
+  if (!data.trades?.length) {
+    tradeEl.innerHTML = '<div class="bot-empty">// 尚無下單記錄</div>';
+  } else {
+    tradeEl.innerHTML = data.trades.slice(0, 10).map(t => `
+      <div class="trade-row">
+        <span class="trade-badge ${t['買賣']==='買入'?'buy':'sell'}">${t['買賣']}</span>
+        <div class="trade-info">
+          <div class="trade-main">${t['代號']} ${t['股數']}股 @ ${t['價格']}元</div>
+          <div class="trade-sub">${t['時間']} ｜ ${t['原因']?.slice(0,20) || ''}</div>
+        </div>
+        <div class="trade-amount">NT$${parseInt(t['金額']).toLocaleString()}</div>
+      </div>`).join('');
+  }
+
+  // 績效摘要
+  const sumEl = document.getElementById('botSummary');
+  if (!data.summary?.length) {
+    sumEl.innerHTML = '<div class="bot-empty">// 尚無績效數據</div>';
+  } else {
+    const recent = data.summary.slice(-10).reverse();
+    const maxAbs = Math.max(...recent.map(s => Math.abs(parseFloat(s['報酬率%']) || 0)), 1);
+    sumEl.innerHTML = recent.map(s => {
+      const pct = parseFloat(s['報酬率%']) || 0;
+      const barWidth = Math.abs(pct) / maxAbs * 100;
+      const color = pct >= 0 ? 'pos' : 'neg';
+      const valColor = pct >= 0 ? 'var(--green)' : 'var(--red)';
+      return `<div class="perf-row">
+        <div class="perf-date">${s['日期']?.slice(0,16) || '—'}</div>
+        <div class="perf-bar-wrap"><div class="perf-bar ${color}" style="width:${barWidth}%"></div></div>
+        <div class="perf-val" style="color:${valColor}">${s['報酬率%']}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // AI 分析
+  const aiEl = document.getElementById('botAnalysis');
+  if (!data.analysis?.length) {
+    aiEl.innerHTML = '<div class="bot-empty">// 尚無 AI 分析記錄</div>';
+  } else {
+    aiEl.innerHTML = data.analysis.slice(0, 3).map(a => `
+      <div class="ai-card">
+        <div class="ai-card-time">${a['時間']} ｜ 決策：${a['決策摘要'] || '無'}</div>
+        <div class="ai-card-text">${(a['分析內容'] || '').slice(0, 300)}${a['分析內容']?.length > 300 ? '...' : ''}</div>
+      </div>`).join('');
+  }
+}
+
+// 切換到機器人 tab 時自動載入
+const origSwitchTab = switchTab;
+
+
 let klineCurrentSymbol = null;
 let klineCurrentMarket = null;
 let klineCurrentRange  = '1mo';
