@@ -1,3 +1,5 @@
+import yahooFinance from 'yahoo-finance2';
+
 export const config = {
   maxDuration: 60
 };
@@ -14,14 +16,13 @@ export default async function handler(req, res) {
   if (!apiKey) return res.status(400).json({ error: 'MISSING API KEY' });
   if (!portfolio?.length) return res.status(400).json({ error: 'EMPTY PORTFOLIO' });
 
-  // ── Fetch historical data from Yahoo Finance ──
+  // ── Fetch historical data via yahoo-finance2 ──
   async function fetchHistory(sym, market) {
     const yahooSym = (market === '台股' || market === 'ETF') ? sym + '.TW' : sym;
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSym)}?interval=1d&range=1y`;
-    const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-    const data = await r.json();
-    const closes = data?.chart?.result?.[0]?.indicators?.quote?.[0]?.close ?? [];
-    return closes.filter(c => c != null);
+    const period1 = new Date();
+    period1.setFullYear(period1.getFullYear() - 1);
+    const chart = await yahooFinance.chart(yahooSym, { period1, interval: '1d' }, { validateResult: false });
+    return (chart?.quotes ?? []).map(q => q.close).filter(c => c != null);
   }
 
   // ── Indicators ──
@@ -136,7 +137,28 @@ export default async function handler(req, res) {
       `  布林通道: 上${ind.bb_upper} / 中${ind.bb_mid} / 下${ind.bb_lower}`;
   });
 
-  const prompt = `你是一位專業的穩健型股票分析師，擅長技術分析。\n\n以下是投資組合的技術指標數據：\n\n${lines.join('\n\n')}\n\n請針對每一檔持股：\n1. 綜合技術指標判斷目前趨勢（多頭/空頭/盤整）\n2. 特別說明黃金交叉或死亡交叉的意義\n3. 給出明確操作建議：加碼/持有/觀察/減碼/停損\n4. 一句話說明理由\n\n最後給整體投組一個綜合評估（偏多/中性/偏空）與最需注意的風險。\n\n回覆使用繁體中文，格式簡潔。結尾聲明：以上為 AI 技術分析參考，實際投資請自行判斷。`;
+  const prompt = `你是一位親切的專業股票分析師，正在幫一位穩健型投資人分析他的投資組合。
+
+以下是每檔持股的技術指標數據：
+
+${lines.join('\n\n')}
+
+請用口語化、容易理解的方式，針對每一檔持股依序說明：
+1. 目前走勢是偏多、盤整還是偏空，用一句話說清楚
+2. 均線交叉的狀況代表什麼意思
+3. RSI 和布林通道顯示現在是超買、超賣還是正常
+4. 最後給出明確的操作建議，只能選以下四種之一：
+   「建議買入」、「繼續觀察」、「部分獲利了結」、「建議賣出」
+   並且用一句話解釋理由
+
+最後總結整體投組目前偏多、中性還是偏空，以及最需要注意的一兩個風險。
+
+注意事項：
+- 請用繁體中文回覆
+- 語氣要像在跟朋友說話，不要太學術
+- 不要使用星號或 Markdown 格式符號
+- 每檔股票之間用一條分隔線隔開
+- 結尾加上：以上為 AI 技術分析參考，實際投資請自行判斷。`;
 
   // ── Call Gemini ──
   try {
